@@ -4,17 +4,62 @@
 session_start();
 require "config.php";
 
+// Lo que el usuario buscó o el oficio que tocó (llegan por la dirección:
+// index.php?buscar=pintor  o  index.php?oficio=Plomero)
+$buscar = trim($_GET["buscar"] ?? "");
+$oficio = trim($_GET["oficio"] ?? "");
+
 // Traemos los profesionales desde la base de datos en vez de tenerlos
 // escritos a mano en el HTML como antes
 // Solo los que ya completaron su perfil (tienen oficio) y siguen en actividad
-// (sin fecha de baja o con baja a futuro),
-// ordenados por mejor valoración
-$resultado_profesionales = $conexion->query(
-    "SELECT * FROM profesionales
-     WHERE oficio IS NOT NULL
-       AND (fecha_baja IS NULL OR fecha_baja >= CURDATE())
-     ORDER BY valoracion DESC, cantidad_resenas DESC"
-);
+// (sin fecha de baja o con baja a futuro).
+// Si hay una búsqueda o un oficio elegido, se agrega esa condición.
+$sql = "SELECT * FROM profesionales
+        WHERE oficio IS NOT NULL
+          AND (fecha_baja IS NULL OR fecha_baja >= CURDATE())";
+$tipos = "";
+$valores = [];
+
+if ($oficio !== "") {
+    $sql .= " AND oficio = ?";
+    $tipos .= "s";
+    $valores[] = $oficio;
+}
+if ($buscar !== "") {
+    // LIKE con % busca el texto en cualquier parte: "pint" encuentra "Pintor"
+    $sql .= " AND (oficio LIKE ? OR nombre LIKE ? OR apellido LIKE ? OR descripcion LIKE ? OR ubicacion LIKE ?)";
+    $patron = "%" . $buscar . "%";
+    $tipos .= "sssss";
+    array_push($valores, $patron, $patron, $patron, $patron, $patron);
+}
+$sql .= " ORDER BY valoracion DESC, cantidad_resenas DESC";   // mejor valorados primero
+
+$consulta = $conexion->prepare($sql);
+if ($tipos !== "") {
+    // ...$valores pasa cada elemento del array como un dato aparte
+    $consulta->bind_param($tipos, ...$valores);
+}
+$consulta->execute();
+$resultado_profesionales = $consulta->get_result();
+
+// Título de la sección según lo que se esté mostrando
+if ($oficio !== "") {
+    $titulo_profesionales = $oficio;
+} elseif ($buscar !== "") {
+    $titulo_profesionales = "Resultados para \"" . $buscar . "\"";
+} else {
+    $titulo_profesionales = "Profesionales destacados";
+}
+
+// Los oficios del inicio: nombre y emoji. Cada tarjeta filtra por su oficio.
+$oficios_destacados = [
+    "Electricista" => "⚡",
+    "Gasista"      => "🔥",
+    "Plomero"      => "🚰",
+    "Pintor"       => "🎨",
+    "Carpintero"   => "🔨",
+    "Albañil"      => "🧱",
+];
 
 // A dónde lleva el botón "Publicar servicio" según quién esté mirando
 if (!isset($_SESSION["usuario_id"])) {
@@ -43,10 +88,11 @@ if (!isset($_SESSION["usuario_id"])) {
                 <span class="logo-icono">🏠</span>
                 <span class="logo-texto"><strong>Manos</strong><span>a la Obra</span></span>
             </a>
-            <div class="buscador">
-                <input type="text" placeholder="¿Qué servicio necesitás?">
-                <button>🔍</button>
-            </div>
+            <!-- method="get": lo buscado viaja en la dirección (index.php?buscar=...) -->
+            <form class="buscador" action="index.php#profesionales" method="get">
+                <input type="search" name="buscar" placeholder="¿Qué servicio necesitás?" value="<?php echo htmlspecialchars($buscar); ?>">
+                <button type="submit" aria-label="Buscar">🔍</button>
+            </form>
             <div class="acciones">
                 <?php if (isset($_SESSION["usuario_nombre"])): ?>
                     <!-- Si hay sesion iniciada, mostramos el nombre y el boton de Salir -->
@@ -63,8 +109,8 @@ if (!isset($_SESSION["usuario_id"])) {
             </div>
         </div>
         <nav class="barra-menu">
-            <a href="#" class="activo">Inicio</a>
-            <a href="#">Oficios</a>
+            <a href="index.php" class="activo">Inicio</a>
+            <a href="#oficios">Oficios</a>
             <a href="#profesionales">Profesionales</a>
             <a href="#">Cómo funciona</a>
             <a href="#">Contacto</a>
@@ -89,26 +135,16 @@ if (!isset($_SESSION["usuario_id"])) {
 
     <section class="seccion">
         <div class="contenedor">
-            <h2 class="seccion-titulo">Oficios más buscados</h2>
+            <h2 class="seccion-titulo" id="oficios">Oficios más buscados</h2>
             <div class="oficios-grid">
-                <div class="oficio-card"><span class="icono">⚡</span>
-                    <p>Electricista</p>
-                </div>
-                <div class="oficio-card"><span class="icono">🔥</span>
-                    <p>Gasista</p>
-                </div>
-                <div class="oficio-card"><span class="icono">🚰</span>
-                    <p>Plomero</p>
-                </div>
-                <div class="oficio-card"><span class="icono">🎨</span>
-                    <p>Pintor</p>
-                </div>
-                <div class="oficio-card"><span class="icono">🔨</span>
-                    <p>Carpintero</p>
-                </div>
-                <div class="oficio-card"><span class="icono">🧱</span>
-                    <p>Albañil</p>
-                </div>
+                <?php foreach ($oficios_destacados as $nombre_oficio => $icono): ?>
+                    <!-- urlencode arma bien la dirección aunque el oficio tenga tildes o espacios -->
+                    <a href="index.php?oficio=<?php echo urlencode($nombre_oficio); ?>#profesionales"
+                       class="oficio-card <?php echo $oficio === $nombre_oficio ? "elegido" : ""; ?>">
+                        <span class="icono"><?php echo $icono; ?></span>
+                        <p><?php echo $nombre_oficio; ?></p>
+                    </a>
+                <?php endforeach; ?>
             </div>
         </div>
     </section>
@@ -116,11 +152,20 @@ if (!isset($_SESSION["usuario_id"])) {
 
     <section class="seccion">
         <div class="contenedor">
-            <h2 class="seccion-titulo" id="profesionales">Profesionales destacados</h2>
+            <div class="seccion-encabezado">
+                <h2 class="seccion-titulo" id="profesionales"><?php echo htmlspecialchars($titulo_profesionales); ?></h2>
+                <?php if ($buscar !== "" || $oficio !== ""): ?>
+                    <a href="index.php#profesionales" class="ver-todos">✕ Ver todos</a>
+                <?php endif; ?>
+            </div>
             <div class="profesionales-grid">
 
                 <?php if ($resultado_profesionales->num_rows === 0): ?>
-                    <p>Todavía no hay profesionales cargados.</p>
+                    <p class="sin-resultados">
+                        <?php echo ($buscar !== "" || $oficio !== "")
+                            ? "No encontramos profesionales con esa búsqueda."
+                            : "Todavía no hay profesionales cargados."; ?>
+                    </p>
                 <?php endif; ?>
 
                 <?php while ($profesional = $resultado_profesionales->fetch_assoc()): ?>
@@ -134,7 +179,7 @@ if (!isset($_SESSION["usuario_id"])) {
                             <?php if (!empty($profesional["telefono"])): ?>
                                 <p class="telefono">📞 <?php echo htmlspecialchars($profesional["telefono"]); ?></p>
                             <?php endif; ?>
-                            <a href="#" class="boton boton-borde">Ver perfil</a>
+                            <a href="perfil.php?id=<?php echo $profesional["id"]; ?>" class="boton boton-borde">Ver perfil</a>
                         </div>
                     </div>
                 <?php endwhile; ?>

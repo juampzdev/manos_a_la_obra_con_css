@@ -188,6 +188,9 @@ a.link-ingresar:hover { color: var(--primario); }
     gap: 16px;
 }
 .oficio-card {
+    display: block;              /* ahora es un link <a>, que por defecto va en línea */
+    text-decoration: none;
+    color: var(--texto);
     background: var(--blanco);
     border: 1px solid var(--borde);
     border-radius: var(--radio);
@@ -198,8 +201,21 @@ a.link-ingresar:hover { color: var(--primario); }
     cursor: pointer;
 }
 .oficio-card:hover { transform: translateY(-3px); border-color: var(--primario); }
+.oficio-card.elegido { border-color: var(--primario); background: var(--primario-suave); }  /* el oficio que se está filtrando */
 .oficio-card .icono { font-size: 2.2rem; }
 .oficio-card p { margin: 8px 0 0; font-weight: 600; }
+
+/* Título de "Profesionales" con el link "Ver todos" al lado */
+.seccion-encabezado {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+.ver-todos { font-weight: 600; text-decoration: none; }
+.ver-todos:hover { text-decoration: underline; }
+.sin-resultados { color: var(--texto-suave); }
 
 /* Tarjetas de profesionales */
 .profesionales-grid {
@@ -268,6 +284,54 @@ a.link-ingresar:hover { color: var(--primario); }
 }
 .pie-ayuda { text-align: center; }
 .pie-ayuda p { margin: 0 0 10px; font-size: 1.1rem; }
+
+/* =========================================================
+   Perfil público del profesional (perfil.php)
+   ========================================================= */
+.contenedor-angosto { max-width: 760px; }   /* el perfil se lee mejor más angosto */
+
+.perfil-caja {
+    background: var(--blanco);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+    padding: 24px;
+    box-shadow: var(--sombra);
+    margin-top: 18px;
+}
+.perfil-caja h1 { margin: 0 0 6px; font-size: 1.7rem; }
+.perfil-caja h2 { margin: 0 0 12px; font-size: 1.25rem; }
+.perfil-caja > p { margin: 0 0 12px; }
+
+.perfil-cabecera { display: flex; gap: 20px; align-items: center; }
+.perfil-avatar { width: 80px; height: 80px; font-size: 1.6rem; }
+
+.perfil-datos {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px 20px;
+    color: var(--texto-suave);
+}
+
+.texto-suave { color: var(--texto-suave); margin: 0; }
+
+/* Cada reseña separada de la siguiente con una línea */
+.resena { padding: 14px 0; border-top: 1px solid var(--borde); }
+.resena:first-of-type { border-top: none; padding-top: 0; }
+.resena p { margin: 6px 0 4px; }
+.resena-encabezado {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+.estrellas { color: #f59e0b; letter-spacing: 2px; }   /* amarillo */
+.resena-fecha { font-size: 0.8rem; color: var(--texto-suave); }
+
+/* El formulario de reseña va dentro de una caja, así que sin sombra ni relleno propio */
+.formulario.formulario-plano { max-width: none; padding: 0; box-shadow: none; border-radius: 0; }
 
 /* =========================================================
    Formularios (login, crear cuenta, perfil profesional)
@@ -383,4 +447,7 @@ a.link-ingresar:hover { color: var(--primario); }
     .pie-confianza ul { grid-template-columns: 1fr; }
     .formulario { padding: 24px 18px; }
     .formulario .fila { flex-direction: column; }
+    .formulario.formulario-plano { padding: 0; }
+    .perfil-datos { grid-template-columns: 1fr; }
+    .perfil-cabecera { flex-direction: column; text-align: center; }
 }

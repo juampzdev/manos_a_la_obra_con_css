@@ -6,6 +6,8 @@
 --  Las cuentas se guardan en DOS tablas separadas:
 --    - clientes:      los que buscan un trabajador
 --    - profesionales: los que ofrecen un servicio (y su perfil)
+--  Y una tercera tabla une a las dos:
+--    - resenas:       la opinión que un cliente deja sobre un profesional
 -- =========================================================
 
 CREATE DATABASE IF NOT EXISTS manos_a_la_obra
@@ -14,6 +16,8 @@ CREATE DATABASE IF NOT EXISTS manos_a_la_obra
 USE manos_a_la_obra;
 SET NAMES utf8mb4;   -- para que las tildes de los datos de ejemplo se guarden bien
 
+-- resenas se borra primero porque apunta a las otras dos tablas
+DROP TABLE IF EXISTS resenas;
 DROP TABLE IF EXISTS profesionales;
 DROP TABLE IF EXISTS clientes;
 DROP TABLE IF EXISTS usuarios;   -- tabla de la versión anterior, ya no se usa
@@ -51,18 +55,51 @@ CREATE TABLE profesionales (
     experiencia INT NULL,
     fecha_alta DATE NULL,
     fecha_baja DATE NULL,
+    -- Promedio y cantidad de reseñas. Se recalculan solos cada vez que
+    -- un cliente deja una reseña (ver perfil.php)
     valoracion DECIMAL(2,1) DEFAULT 0,
     cantidad_resenas INT DEFAULT 0,
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- ---------------------------------------------------------
+-- Reseñas: cada fila es la opinión de UN cliente sobre UN profesional.
+-- FOREIGN KEY: profesional_id y cliente_id tienen que existir en sus tablas.
+-- ON DELETE CASCADE: si se borra el profesional o el cliente, se borran sus reseñas.
+-- UNIQUE (profesional_id, cliente_id): un cliente deja una sola reseña por profesional.
+-- ---------------------------------------------------------
+CREATE TABLE resenas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    profesional_id INT NOT NULL,
+    cliente_id INT NOT NULL,
+    puntaje TINYINT NOT NULL,                -- de 1 a 5 estrellas
+    comentario VARCHAR(300) NOT NULL,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (profesional_id) REFERENCES profesionales(id) ON DELETE CASCADE,
+    FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE,
+    UNIQUE (profesional_id, cliente_id)
+);
+
+-- ---------------------------------------------------------
 -- Datos de ejemplo. La contraseña de todas estas cuentas es: 123456
 -- ---------------------------------------------------------
-INSERT INTO profesionales (nombre, apellido, email, password, iniciales, oficio, descripcion, ubicacion, telefono, experiencia, fecha_alta, valoracion, cantidad_resenas) VALUES
-('Juan',   'Pérez', 'juan@ejemplo.com',   '$2y$10$ioq8MZwfjHbqKlICL2TU7.Kb122ljeebjRXsbXTO5Z1s.r0jHowrq', 'JP', 'Electricista', 'Instalaciones domiciliarias y tableros.', 'Rosario Centro', '341 555-1111', 12, '2014-03-01', 4.8, 32),
-('María',  'Gómez', 'maria@ejemplo.com',  '$2y$10$ioq8MZwfjHbqKlICL2TU7.Kb122ljeebjRXsbXTO5Z1s.r0jHowrq', 'MG', 'Pintor',       'Pintura de interiores y exteriores.',    'Fisherton',      '341 555-2222',  8, '2018-06-15', 4.9, 21),
-('Carlos', 'Ruiz',  'carlos@ejemplo.com', '$2y$10$ioq8MZwfjHbqKlICL2TU7.Kb122ljeebjRXsbXTO5Z1s.r0jHowrq', 'CR', 'Plomero',      'Destapaciones y arreglos de pérdidas.',  'Echesortu',      '341 555-3333', 15, '2011-01-10', 4.6, 18);
+INSERT INTO profesionales (nombre, apellido, email, password, iniciales, oficio, descripcion, ubicacion, telefono, experiencia, fecha_alta) VALUES
+('Juan',   'Pérez', 'juan@ejemplo.com',   '$2y$10$ioq8MZwfjHbqKlICL2TU7.Kb122ljeebjRXsbXTO5Z1s.r0jHowrq', 'JP', 'Electricista', 'Instalaciones domiciliarias y tableros.', 'Rosario Centro', '341 555-1111', 12, '2014-03-01'),
+('María',  'Gómez', 'maria@ejemplo.com',  '$2y$10$ioq8MZwfjHbqKlICL2TU7.Kb122ljeebjRXsbXTO5Z1s.r0jHowrq', 'MG', 'Pintor',       'Pintura de interiores y exteriores.',    'Fisherton',      '341 555-2222',  8, '2018-06-15'),
+('Carlos', 'Ruiz',  'carlos@ejemplo.com', '$2y$10$ioq8MZwfjHbqKlICL2TU7.Kb122ljeebjRXsbXTO5Z1s.r0jHowrq', 'CR', 'Plomero',      'Destapaciones y arreglos de pérdidas.',  'Echesortu',      '341 555-3333', 15, '2011-01-10');
 
 INSERT INTO clientes (nombre, apellido, email, password) VALUES
-('Lucía', 'Fernández', 'lucia@ejemplo.com', '$2y$10$ioq8MZwfjHbqKlICL2TU7.Kb122ljeebjRXsbXTO5Z1s.r0jHowrq');
+('Lucía', 'Fernández', 'lucia@ejemplo.com', '$2y$10$ioq8MZwfjHbqKlICL2TU7.Kb122ljeebjRXsbXTO5Z1s.r0jHowrq'),
+('Martín', 'Sosa',     'martin@ejemplo.com', '$2y$10$ioq8MZwfjHbqKlICL2TU7.Kb122ljeebjRXsbXTO5Z1s.r0jHowrq');
+
+-- profesional_id y cliente_id son los id de las filas de arriba (Juan = 1, Lucía = 1, etc.)
+INSERT INTO resenas (profesional_id, cliente_id, puntaje, comentario) VALUES
+(1, 1, 5, 'Vino en el día y me dejó el tablero funcionando. Muy prolijo.'),
+(1, 2, 4, 'Buen trabajo, llegó un poco tarde pero avisó.'),
+(2, 1, 5, 'Pintó todo el living en dos días y dejó todo limpio.'),
+(3, 2, 4, 'Solucionó la pérdida del baño rápido y a buen precio.');
+
+-- Calculamos el promedio y la cantidad a partir de las reseñas cargadas
+UPDATE profesionales
+SET valoracion       = (SELECT IFNULL(ROUND(AVG(puntaje), 1), 0) FROM resenas WHERE resenas.profesional_id = profesionales.id),
+    cantidad_resenas = (SELECT COUNT(*) FROM resenas WHERE resenas.profesional_id = profesionales.id);
