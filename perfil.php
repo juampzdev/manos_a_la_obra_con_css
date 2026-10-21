@@ -59,10 +59,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 }
 
 // ---------- Datos del profesional ----------
-// Mismas condiciones que en el inicio: perfil completo y en actividad
+// Mismas condiciones que en el inicio: perfil completo y en actividad.
+// LEFT JOIN trae el nombre del barrio. Como las dos tablas tienen una columna "id",
+// hay que aclarar de cuál hablamos: profesionales.id
 $consulta = $conexion->prepare(
-    "SELECT * FROM profesionales
-     WHERE id = ?
+    "SELECT profesionales.*, barrios.barrio
+     FROM profesionales
+     LEFT JOIN barrios ON barrios.id = profesionales.barrio_id
+     WHERE profesionales.id = ?
        AND oficio IS NOT NULL
        AND (fecha_baja IS NULL OR fecha_baja >= CURDATE())"
 );
@@ -156,7 +160,13 @@ function estrellas($puntaje) {
                     <h2>Sobre su trabajo</h2>
                     <p><?php echo htmlspecialchars($profesional["descripcion"] ?? ""); ?></p>
                     <ul class="perfil-datos">
-                        <li>📍 <?php echo htmlspecialchars($profesional["ubicacion"] ?? ""); ?></li>
+                        <!-- Barrio y ciudad. El domicilio exacto no se muestra -->
+                        <li>📍 <?php
+                            if (!empty($profesional["barrio"])) {
+                                echo htmlspecialchars($profesional["barrio"]) . ", ";
+                            }
+                            echo htmlspecialchars($profesional["ubicacion"] ?? "");
+                        ?></li>
                         <li>📞 <?php echo htmlspecialchars($profesional["telefono"] ?? ""); ?></li>
                         <li>🛠️ <?php echo (int) $profesional["experiencia"]; ?> años de experiencia</li>
                         <?php if (!empty($profesional["fecha_alta"])): ?>

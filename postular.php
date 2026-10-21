@@ -23,6 +23,14 @@ $oficios = ["Electricista", "Plomero", "Gasista", "Carpintero", "Pintor", "Alba�
 $mensaje = null;
 $error = null;
 
+// Los barrios para la lista desplegable salen de la tabla barrios.
+// Armamos un array id => fila, así después es fácil revisar si el barrio elegido existe.
+$barrios = [];
+$resultado_barrios = $conexion->query("SELECT id, barrio, zona FROM barrios ORDER BY zona, barrio");
+while ($fila = $resultado_barrios->fetch_assoc()) {
+    $barrios[$fila["id"]] = $fila;
+}
+
 // ---------- Guardar el formulario ----------
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $oficio      = $_POST["profesion"] ?? "";
@@ -30,6 +38,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $fecha_baja  = $_POST["fecha_baja"] ?? "";
     $descripcion = trim($_POST["descripcion"] ?? "");
     $ciudad      = trim($_POST["ciudad"] ?? "");
+    $domicilio   = trim($_POST["domicilio"] ?? "");
+    $barrio_id   = (int) ($_POST["barrio"] ?? 0);
     $experiencia = (int) ($_POST["experiencia"] ?? 0);
     $telefono    = trim($_POST["telefono"] ?? "");
 
@@ -37,8 +47,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $fecha_baja = $fecha_baja === "" ? null : $fecha_baja;
 
     if (!in_array($oficio, $oficios) || $fecha_alta === "" || $descripcion === ""
-        || $ciudad === "" || $telefono === "") {
+        || $ciudad === "" || $domicilio === "" || $telefono === "") {
         $error = "Completá todos los campos obligatorios.";
+    } elseif (!isset($barrios[$barrio_id])) {
+        $error = "Elegí tu barrio de la lista.";
     } elseif (mb_strlen($descripcion) > 300) {
         $error = "La descripción no puede pasar los 300 caracteres.";
     } elseif ($experiencia < 0 || $experiencia > 60) {
@@ -57,12 +69,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         $sql = $conexion->prepare(
             "UPDATE profesionales
-             SET oficio = ?, descripcion = ?, ubicacion = ?, telefono = ?,
-                 experiencia = ?, fecha_alta = ?, fecha_baja = ?
+             SET oficio = ?, descripcion = ?, ubicacion = ?, domicilio = ?, barrio_id = ?,
+                 telefono = ?, experiencia = ?, fecha_alta = ?, fecha_baja = ?
              WHERE id = ?"
         );
-        $sql->bind_param("ssssissi", $oficio, $descripcion, $ciudad, $telefono,
-                         $experiencia, $fecha_alta, $fecha_baja, $usuario_id);
+        $sql->bind_param("ssssisissi", $oficio, $descripcion, $ciudad, $domicilio, $barrio_id,
+                         $telefono, $experiencia, $fecha_alta, $fecha_baja, $usuario_id);
         $sql->execute();
         $mensaje = $ya_tenia_perfil ? "Perfil actualizado." : "¡Perfil publicado! Ya aparecés en el inicio.";
     }
@@ -81,6 +93,7 @@ function valor($campo_form, $campo_db) {
     return htmlspecialchars($perfil[$campo_db] ?? "");
 }
 $oficio_actual = $error !== null ? ($_POST["profesion"] ?? "") : ($perfil["oficio"] ?? "");
+$barrio_actual = $error !== null ? (int) ($_POST["barrio"] ?? 0) : (int) ($perfil["barrio_id"] ?? 0);
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -136,6 +149,24 @@ $oficio_actual = $error !== null ? ($_POST["profesion"] ?? "") : ($perfil["ofici
             </label>
             <label for="experiencia">Años de experiencia
                 <input type="number" id="experiencia" name="experiencia" min="0" max="60" inputmode="numeric" value="<?php echo valor("experiencia", "experiencia"); ?>" required>
+            </label>
+        </div>
+
+        <div class="fila">
+            <label for="domicilio">Domicilio
+                <span class="ayuda">Calle y número. No se muestra en tu tarjeta.</span>
+                <input type="text" id="domicilio" name="domicilio" maxlength="120" autocomplete="street-address" value="<?php echo valor("domicilio", "domicilio"); ?>" required>
+            </label>
+            <label for="barrio">Barrio
+                <span class="ayuda">Con esto te mostramos a los clientes cercanos.</span>
+                <select id="barrio" name="barrio" required>
+                    <option value="" disabled <?php echo $barrio_actual === 0 ? "selected" : ""; ?>>Elegí tu barrio</option>
+                    <?php foreach ($barrios as $id_barrio => $b): ?>
+                        <option value="<?php echo $id_barrio; ?>" <?php echo $barrio_actual === $id_barrio ? "selected" : ""; ?>>
+                            <?php echo htmlspecialchars($b["barrio"] . " (zona " . $b["zona"] . ")"); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
             </label>
         </div>
 

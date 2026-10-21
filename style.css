@@ -275,6 +275,37 @@ a.link-ingresar:hover { color: var(--primario); }
 .ver-todos:hover { text-decoration: underline; }
 .sin-resultados { color: var(--texto-suave); }
 
+/* Profesionales cerca: fondo naranja clarito para separarla de las otras secciones */
+.seccion-cerca { background: var(--primario-suave); }
+.elegir-barrio {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;            /* en celular la lista y el botón bajan de línea */
+    margin-bottom: 24px;
+}
+.elegir-barrio label { font-weight: 600; }
+.elegir-barrio select {
+    font: inherit;
+    padding: 9px 12px;
+    border: 1px solid var(--borde-campo);
+    border-radius: 8px;
+    background: var(--tarjeta);
+    color: var(--texto);
+    min-width: 220px;
+}
+.elegir-barrio select:focus { outline: 2px solid var(--primario); }
+.elegir-barrio .boton { padding: 9px 18px; font: inherit; font-weight: 600; }
+
+/* Etiqueta "En tu barrio" / "Zona Centro" arriba del nombre */
+.etiqueta-cerca {
+    display: inline-block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--texto-suave);
+    margin-bottom: 4px;
+}
+
 /* Tarjetas de profesionales */
 .profesionales-grid {
     display: grid;

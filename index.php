@@ -17,7 +17,11 @@ $oficio = trim($_GET["oficio"] ?? "");
 // Solo los que ya completaron su perfil (tienen oficio) y siguen en actividad
 // (sin fecha de baja o con baja a futuro).
 // Si hay una búsqueda o un oficio elegido, se agrega esa condición.
-$sql = "SELECT * FROM profesionales
+// LEFT JOIN trae el nombre del barrio desde la tabla barrios. Es LEFT para no dejar
+// afuera a los profesionales que todavía no eligieron barrio (barrio_id vacío).
+$sql = "SELECT profesionales.*, barrios.barrio
+        FROM profesionales
+        LEFT JOIN barrios ON barrios.id = profesionales.barrio_id
         WHERE oficio IS NOT NULL
           AND (fecha_baja IS NULL OR fecha_baja >= CURDATE())";
 $tipos = "";
@@ -30,10 +34,11 @@ if ($oficio !== "") {
 }
 if ($buscar !== "") {
     // LIKE con % busca el texto en cualquier parte: "pint" encuentra "Pintor"
-    $sql .= " AND (oficio LIKE ? OR nombre LIKE ? OR apellido LIKE ? OR descripcion LIKE ? OR ubicacion LIKE ?)";
+    $sql .= " AND (oficio LIKE ? OR nombre LIKE ? OR apellido LIKE ? OR descripcion LIKE ?
+              OR ubicacion LIKE ? OR barrios.barrio LIKE ?)";
     $patron = "%" . $buscar . "%";
-    $tipos .= "sssss";
-    array_push($valores, $patron, $patron, $patron, $patron, $patron);
+    $tipos .= "ssssss";
+    array_push($valores, $patron, $patron, $patron, $patron, $patron, $patron);
 }
 $sql .= " ORDER BY valoracion DESC, cantidad_resenas DESC";   // mejor valorados primero
 
@@ -52,6 +57,38 @@ if ($oficio !== "") {
     $titulo_profesionales = "Resultados para \"" . $buscar . "\"";
 } else {
     $titulo_profesionales = "Profesionales destacados";
+}
+
+// ---------- Profesionales cerca ----------
+// La lista de barrios para elegir sale de la tabla barrios
+$barrios = [];
+$resultado_barrios = $conexion->query("SELECT id, barrio, zona FROM barrios ORDER BY zona, barrio");
+while ($fila = $resultado_barrios->fetch_assoc()) {
+    $barrios[$fila["id"]] = $fila;
+}
+
+// El barrio elegido llega por la dirección: index.php?barrio=11
+$barrio_elegido = (int) ($_GET["barrio"] ?? 0);
+$cercanos = [];
+if (isset($barrios[$barrio_elegido])) {
+    // Solo los de la MISMA ZONA que el barrio elegido.
+    // ORDER BY (barrios.id = ?) DESC pone primero a los del mismo barrio:
+    // la comparación da 1 si es el mismo barrio y 0 si no, y DESC ordena de mayor a menor.
+    // LIMIT 6 trae como mucho seis.
+    $consulta_cerca = $conexion->prepare(
+        "SELECT profesionales.*, barrios.barrio
+         FROM profesionales
+         JOIN barrios ON barrios.id = profesionales.barrio_id
+         WHERE oficio IS NOT NULL
+           AND (fecha_baja IS NULL OR fecha_baja >= CURDATE())
+           AND barrios.zona = ?
+         ORDER BY (barrios.id = ?) DESC, valoracion DESC
+         LIMIT 6"
+    );
+    $zona_elegida = $barrios[$barrio_elegido]["zona"];
+    $consulta_cerca->bind_param("si", $zona_elegida, $barrio_elegido);
+    $consulta_cerca->execute();
+    $cercanos = $consulta_cerca->get_result()->fetch_all(MYSQLI_ASSOC);
 }
 
 // Los oficios del inicio: nombre y emoji. Cada tarjeta filtra por su oficio.
@@ -130,6 +167,7 @@ if (($_SESSION["usuario_tipo"] ?? "") === "profesional") {
         <nav class="barra-menu">
             <a href="index.php" class="activo">Inicio</a>
             <a href="#oficios">Oficios</a>
+            <a href="#cerca">Cerca de vos</a>
             <a href="#profesionales">Profesionales</a>
             <a href="#">Cómo funciona</a>
             <a href="#">Contacto</a>
@@ -178,6 +216,43 @@ if (($_SESSION["usuario_tipo"] ?? "") === "profesional") {
         </div>
     </section>
 
+    <!-- Profesionales cerca: el visitante elige su barrio y le mostramos los de su zona -->
+    <section class="seccion seccion-cerca">
+        <div class="contenedor">
+            <h2 class="seccion-titulo" id="cerca">Profesionales cerca</h2>
+
+            <form class="elegir-barrio" action="index.php#cerca" method="get">
+                <label for="barrio">¿En qué barrio estás?</label>
+                <select id="barrio" name="barrio" required>
+                    <option value="" disabled <?php echo isset($barrios[$barrio_elegido]) ? "" : "selected"; ?>>Elegí tu barrio</option>
+                    <?php foreach ($barrios as $id_barrio => $b): ?>
+                        <option value="<?php echo $id_barrio; ?>" <?php echo $barrio_elegido === $id_barrio ? "selected" : ""; ?>>
+                            <?php echo htmlspecialchars($b["barrio"]); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <button type="submit" class="boton boton-lleno">Ver cercanos</button>
+            </form>
+
+            <?php if (isset($barrios[$barrio_elegido])): ?>
+                <?php if (count($cercanos) === 0): ?>
+                    <p class="sin-resultados">Todavía no hay profesionales en la zona <?php echo htmlspecialchars($barrios[$barrio_elegido]["zona"]); ?>.</p>
+                <?php else: ?>
+                    <div class="profesionales-grid">
+                        <?php foreach ($cercanos as $profesional): ?>
+                            <?php
+                            // La etiqueta dice si está en el mismo barrio o solo en la misma zona
+                            $etiqueta = $profesional["barrio_id"] == $barrio_elegido
+                                ? "🏠 En tu barrio"
+                                : "📍 Zona " . $barrios[$barrio_elegido]["zona"];
+                            include "tarjeta_profesional.php";
+                            ?>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+            <?php endif; ?>
+        </div>
+    </section>
 
     <section class="seccion">
         <div class="contenedor">
@@ -198,19 +273,10 @@ if (($_SESSION["usuario_tipo"] ?? "") === "profesional") {
                 <?php endif; ?>
 
                 <?php while ($profesional = $resultado_profesionales->fetch_assoc()): ?>
-                    <div class="profesional-card">
-                        <div class="profesional-avatar"><?php echo htmlspecialchars($profesional["iniciales"]); ?></div>
-                        <div class="profesional-info">
-                            <h3><?php echo htmlspecialchars($profesional["nombre"] . " " . $profesional["apellido"]); ?></h3>
-                            <p class="oficio"><?php echo htmlspecialchars($profesional["oficio"]); ?></p>
-                            <p class="valoracion">⭐ <?php echo $profesional["valoracion"]; ?> (<?php echo $profesional["cantidad_resenas"]; ?> reseñas)</p>
-                            <p class="ubicacion">📍 <?php echo htmlspecialchars($profesional["ubicacion"] ?? ""); ?></p>
-                            <?php if (!empty($profesional["telefono"])): ?>
-                                <p class="telefono">📞 <?php echo htmlspecialchars($profesional["telefono"]); ?></p>
-                            <?php endif; ?>
-                            <a href="perfil.php?id=<?php echo $profesional["id"]; ?>" class="boton boton-borde">Ver perfil</a>
-                        </div>
-                    </div>
+                    <?php
+                    $etiqueta = "";   // en esta grilla las tarjetas no llevan etiqueta
+                    include "tarjeta_profesional.php";
+                    ?>
                 <?php endwhile; ?>
 
             </div>

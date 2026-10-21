@@ -20,8 +20,10 @@ Proyecto de la materia **Práctica Profesionalizante** (Analista Funcional en Si
 
 | Archivo | Para qué sirve |
 |---|---|
-| `index.php` | Inicio. Muestra los oficios y los profesionales. Tiene el buscador y el filtro por oficio. |
+| `index.php` | Inicio. Muestra los oficios y los profesionales. Tiene el buscador, el filtro por oficio y la sección "Profesionales cerca". |
+| `tarjeta_profesional.php` | No se abre sola. Es la tarjeta de un profesional que `index.php` incluye en sus dos grillas. |
 | `perfil.php` | Perfil público de un profesional, con sus reseñas y el formulario para dejar una. |
+| `tema.php` | No se ve. Cambia entre modo claro y oscuro y guarda la elección en una cookie. |
 | `registro.php` | Formulario para crear una cuenta (cliente o profesional). |
 | `guardar.php` | No se ve. Guarda la cuenta en la tabla `clientes` o `profesionales`. |
 | `login.php` | Formulario para ingresar. Busca la cuenta en las dos tablas. |
@@ -29,12 +31,15 @@ Proyecto de la materia **Práctica Profesionalizante** (Analista Funcional en Si
 | `postular.php` | El profesional completa o edita su perfil. |
 | `config.php` | Datos de conexión a la base. Lo incluyen todas las páginas. |
 | `style.css` | Todos los estilos del sitio. |
-| `database.sql` | Crea la base con las tablas `clientes`, `profesionales` y `resenas`, y carga datos de ejemplo. |
+| `database.sql` | Crea la base con las tablas `clientes`, `profesionales`, `resenas` y `barrios`, y carga datos de ejemplo. |
 
 ## Base de datos
 
 - **clientes**: datos de la cuenta.
-- **profesionales**: datos de la cuenta y el perfil público (oficio, descripción, ciudad, teléfono, etc.).
+- **profesionales**: datos de la cuenta y el perfil público (oficio, descripción, ciudad, domicilio,
+  barrio, teléfono, etc.). El domicilio no se muestra en la página: solo el barrio y la ciudad.
+- **barrios**: los barrios de Rosario con su zona (Centro, Norte, Noroeste, Oeste, Sur).
+  "Profesionales cerca" muestra primero los del barrio elegido y después los de la misma zona.
 - **resenas**: la opinión de un cliente sobre un profesional (puntaje de 1 a 5 y comentario).
   Un cliente puede dejar una sola reseña por profesional. Cada vez que se agrega una,
   se recalculan `valoracion` y `cantidad_resenas` en la tabla `profesionales`.
@@ -45,7 +50,7 @@ Proyecto de la materia **Práctica Profesionalizante** (Analista Funcional en Si
 2. En el panel de XAMPP, prender **Apache** y **MySQL**.
 3. En SQLyog, conectarse a `localhost` con usuario `root` y contraseña vacía.
 4. Ejecutar `database.sql` completo (**Shift+F9**, no F9). Al refrescar con F5 tienen que aparecer
-   las tablas `clientes`, `profesionales` y `resenas`.
+   las tablas `clientes`, `profesionales`, `resenas` y `barrios`.
 5. Entrar a **http://localhost/manos_a_la_obra_con_css/index.php**.
    Siempre por el navegador, nunca con doble clic en el archivo.
 
@@ -58,9 +63,11 @@ Todas tienen la contraseña **123456**.
 
 | Tipo | Email |
 |---|---|
-| Profesional | `juan@ejemplo.com` (Electricista) |
-| Profesional | `maria@ejemplo.com` (Pintor) |
-| Profesional | `carlos@ejemplo.com` (Plomero) |
+| Profesional | `juan@ejemplo.com` (Electricista, Centro) |
+| Profesional | `maria@ejemplo.com` (Pintor, Fisherton) |
+| Profesional | `carlos@ejemplo.com` (Plomero, Echesortu) |
+| Profesional | `ana@ejemplo.com` (Gasista, Ludueña) |
+| Profesional | `diego@ejemplo.com` (Carpintero, Arroyito) |
 | Cliente | `lucia@ejemplo.com` |
 | Cliente | `martin@ejemplo.com` |
 
