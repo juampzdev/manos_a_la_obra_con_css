@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+    <form action="guardar.php" method="post">
+        <h1>Crear cuenta</h1>
+    
+        <div>
+            <label>Nombre
+                <input type="text" name="nombre">
+            </label>
+            <label>Apellido
+                <input type="text" name="apellido">
+            </label>
+        </div>
+    
+        <label>Email
+            <input type="email" name="email">
+        </label>
+    
+        <label>Contraseña
+            <input type="password" name="password">
+        </label>
+    
+        <label>Tipo de usuario
+            <select name="tipo_usuario" required>
+                <option value="" disabled selected>Elegí una opción</option>
+                <option value="profesional">Profesional</option>
+                <option value="cliente">Cliente</option>
+            </select>
+        </label>
+    
+        <button type="submit">Crear cuenta</button>
+    </form>
+    
+</body>
+</html>

@@ -1,0 +1,386 @@
+/* =========================================================
+   Manos a la Obra - estilos generales
+   Un solo archivo para todo el sitio (inicio + formularios).
+   Los colores están arriba como variables: si querés cambiar
+   el naranja por otro color, lo cambiás en un solo lugar.
+   ========================================================= */
+
+:root {
+    --primario: #e8590c;        /* naranja: botones y detalles */
+    --primario-oscuro: #c2410c; /* naranja al pasar el mouse */
+    --primario-suave: #fff1e8;  /* fondo naranja muy clarito */
+    --texto: #1f2937;           /* casi negro */
+    --texto-suave: #6b7280;     /* gris para textos secundarios */
+    --fondo: #f6f7f9;           /* gris muy claro de fondo */
+    --blanco: #ffffff;
+    --borde: #e5e7eb;
+    --oscuro: #1e293b;          /* azul oscuro del pie de página */
+    --radio: 12px;              /* qué tan redondeadas son las esquinas */
+    --sombra: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+
+/* ---------- Base ---------- */
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    color: var(--texto);
+    background: var(--fondo);
+    line-height: 1.5;
+}
+
+a { color: var(--primario); }
+h1, h2, h3 { line-height: 1.2; }
+
+.contenedor {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* ---------- Botones ---------- */
+.boton,
+.btn-publicar {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    border: 2px solid var(--primario);
+    transition: background 0.2s, color 0.2s;
+    cursor: pointer;
+}
+
+.boton-lleno,
+.btn-publicar {
+    background: var(--primario);
+    color: var(--blanco);
+}
+.boton-lleno:hover,
+.btn-publicar:hover {
+    background: var(--primario-oscuro);
+    border-color: var(--primario-oscuro);
+}
+
+.boton-borde {
+    background: transparent;
+    color: var(--primario);
+}
+.boton-borde:hover {
+    background: var(--primario);
+    color: var(--blanco);
+}
+
+/* ---------- Encabezado ---------- */
+.header-principal {
+    background: var(--blanco);
+    border-bottom: 1px solid var(--borde);
+    position: sticky;      /* queda fijo arriba al bajar */
+    top: 0;
+    z-index: 10;
+}
+
+.barra-superior {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: var(--texto);
+    flex-shrink: 0;
+}
+.logo-icono { font-size: 1.8rem; }
+.logo-texto { display: flex; flex-direction: column; line-height: 1.1; }
+.logo-texto strong { font-size: 1.2rem; color: var(--primario); }
+.logo-texto span { font-size: 0.85rem; color: var(--texto-suave); }
+
+.buscador {
+    flex: 1;
+    display: flex;
+    max-width: 480px;
+}
+.buscador input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1px solid var(--borde);
+    border-right: none;
+    border-radius: 8px 0 0 8px;
+    font: inherit;
+    background: var(--fondo);
+}
+.buscador input:focus { outline: 2px solid var(--primario); background: var(--blanco); }
+.buscador button {
+    padding: 0 16px;
+    border: none;
+    border-radius: 0 8px 8px 0;
+    background: var(--primario);
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.acciones {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-left: auto;
+}
+.link-ingresar {
+    color: var(--texto);
+    text-decoration: none;
+    font-weight: 600;
+}
+a.link-ingresar:hover { color: var(--primario); }
+.acciones .btn-publicar { padding: 8px 16px; }
+
+.barra-menu {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    gap: 28px;
+    overflow-x: auto;
+}
+.barra-menu a {
+    padding: 10px 0;
+    color: var(--texto-suave);
+    text-decoration: none;
+    font-weight: 500;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+}
+.barra-menu a:hover { color: var(--texto); }
+.barra-menu a.activo {
+    color: var(--primario);
+    border-bottom-color: var(--primario);
+}
+
+/* ---------- Portada (hero) ---------- */
+.hero {
+    background: linear-gradient(135deg, var(--primario-suave), #ffe0cc);
+    padding: 70px 0;
+}
+.hero-texto { max-width: 620px; }
+.hero h1 { font-size: 2.4rem; margin: 0 0 14px; }
+.hero p { font-size: 1.15rem; color: var(--texto-suave); margin: 0 0 26px; }
+.hero-botones { display: flex; gap: 12px; flex-wrap: wrap; }
+
+/* ---------- Secciones ---------- */
+.seccion { padding: 50px 0; }
+.seccion-titulo {
+    font-size: 1.6rem;
+    margin: 0 0 24px;
+    scroll-margin-top: 130px;   /* para que el header fijo no lo tape al saltar con el link */
+}
+
+/* Tarjetas de oficios */
+.oficios-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 16px;
+}
+.oficio-card {
+    background: var(--blanco);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+    padding: 22px 12px;
+    text-align: center;
+    box-shadow: var(--sombra);
+    transition: transform 0.2s, border-color 0.2s;
+    cursor: pointer;
+}
+.oficio-card:hover { transform: translateY(-3px); border-color: var(--primario); }
+.oficio-card .icono { font-size: 2.2rem; }
+.oficio-card p { margin: 8px 0 0; font-weight: 600; }
+
+/* Tarjetas de profesionales */
+.profesionales-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+}
+.profesional-card {
+    background: var(--blanco);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+    padding: 22px;
+    box-shadow: var(--sombra);
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+.profesional-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--primario);
+    color: var(--blanco);
+    font-weight: 700;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.profesional-info { flex: 1; min-width: 0; }
+.profesional-info h3 { margin: 0 0 4px; font-size: 1.1rem; }
+.profesional-info p { margin: 2px 0; font-size: 0.92rem; color: var(--texto-suave); }
+.profesional-info .oficio {
+    display: inline-block;
+    background: var(--primario-suave);
+    color: var(--primario-oscuro);
+    font-weight: 600;
+    padding: 2px 10px;
+    border-radius: 20px;
+    margin-bottom: 6px;
+}
+.profesional-info .boton { margin-top: 12px; padding: 7px 16px; font-size: 0.9rem; }
+
+/* ---------- Pie de página ---------- */
+.pie-pagina {
+    background: var(--oscuro);
+    color: #e2e8f0;
+    padding: 50px 0;
+}
+.pie-pagina .contenedor {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+.pie-confianza h2 { margin: 0 0 14px; font-size: 1.4rem; color: var(--blanco); }
+.pie-confianza ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    gap: 6px 30px;
+}
+.pie-ayuda { text-align: center; }
+.pie-ayuda p { margin: 0 0 10px; font-size: 1.1rem; }
+
+/* =========================================================
+   Formularios (login, crear cuenta, perfil profesional)
+   ========================================================= */
+.pagina-form {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 16px;
+    background: linear-gradient(135deg, var(--primario-suave), var(--fondo));
+}
+
+.formulario {
+    width: 100%;
+    max-width: 480px;
+    background: var(--blanco);
+    padding: 32px;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.formulario-ancho { max-width: 600px; }   /* el del perfil tiene más campos */
+
+.formulario h1 { margin: 0; font-size: 1.7rem; }
+.formulario .subtitulo { margin: -8px 0 4px; color: var(--texto-suave); }
+
+.formulario label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    flex: 1;
+}
+
+.formulario input,
+.formulario select,
+.formulario textarea {
+    font: inherit;
+    font-weight: 400;
+    padding: 11px 13px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: var(--blanco);
+    color: var(--texto);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+/* Al hacer clic en un campo se marca en naranja, así se sabe dónde estás escribiendo */
+.formulario input:focus,
+.formulario select:focus,
+.formulario textarea:focus {
+    outline: none;
+    border-color: var(--primario);
+    box-shadow: 0 0 0 3px rgba(232, 89, 12, 0.15);
+}
+
+.formulario textarea { min-height: 110px; resize: vertical; }
+.formulario .fila { display: flex; gap: 16px; }
+.formulario .fila > label { flex: 1 1 0; min-width: 0; }   /* las dos columnas del mismo ancho */
+
+.formulario .ayuda,
+.formulario .contador { font-weight: 400; font-size: 0.8rem; color: var(--texto-suave); }
+.formulario .contador { align-self: flex-end; }
+
+.formulario button {
+    margin-top: 4px;
+    padding: 13px;
+    border: none;
+    border-radius: 8px;
+    background: var(--primario);
+    color: var(--blanco);
+    font: inherit;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.formulario button:hover { background: var(--primario-oscuro); }
+
+.volver {
+    color: var(--texto-suave);
+    text-decoration: none;
+    font-size: 0.9rem;
+    align-self: flex-start;
+}
+.volver:hover { color: var(--primario); }
+
+.pie-form { margin: 0; text-align: center; font-size: 0.92rem; color: var(--texto-suave); }
+.pie-form a { font-weight: 600; }
+
+.mensaje-error,
+.mensaje-ok {
+    margin: 0;
+    padding: 11px 14px;
+    border-radius: 8px;
+    font-size: 0.92rem;
+    border-left: 4px solid;
+}
+.mensaje-error { background: #fdecea; color: #a12622; border-color: #dc2626; }
+.mensaje-ok    { background: #e7f6ec; color: #1d6b3a; border-color: #16a34a; }
+
+/* =========================================================
+   Celulares y pantallas chicas
+   ========================================================= */
+@media (max-width: 760px) {
+    .barra-superior { flex-wrap: wrap; gap: 12px; }
+    .buscador { order: 3; max-width: none; flex-basis: 100%; }  /* el buscador baja a otra línea */
+    .hero { padding: 44px 0; }
+    .hero h1 { font-size: 1.8rem; }
+    .pie-confianza ul { grid-template-columns: 1fr; }
+    .formulario { padding: 24px 18px; }
+    .formulario .fila { flex-direction: column; }
+}
