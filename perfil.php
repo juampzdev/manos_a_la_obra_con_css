@@ -5,6 +5,9 @@
 session_start();
 require "config.php";
 
+// ¿Eligió modo oscuro? Lo guarda tema.php en una cookie
+$modo_oscuro = ($_COOKIE["tema"] ?? "") === "oscuro";
+
 // (int) convierte lo que venga en un número: si alguien escribe texto, queda 0
 $id = (int) ($_GET["id"] ?? 0);
 
@@ -105,7 +108,7 @@ function estrellas($puntaje) {
     <title><?php echo $profesional ? htmlspecialchars($profesional["nombre"] . " " . $profesional["apellido"]) . " | " : ""; ?>Manos a la Obra</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="<?php echo $modo_oscuro ? "oscuro" : ""; ?>">
 
     <header class="header-principal">
         <div class="barra-superior">
@@ -114,6 +117,9 @@ function estrellas($puntaje) {
                 <span class="logo-texto"><strong>Manos</strong><span>a la Obra</span></span>
             </a>
             <div class="acciones">
+                <a href="tema.php" class="boton-tema" title="<?php echo $modo_oscuro ? "Activar modo claro" : "Activar modo oscuro"; ?>">
+                    <?php echo $modo_oscuro ? "☀️" : "🌙"; ?>
+                </a>
                 <?php if (isset($_SESSION["usuario_nombre"])): ?>
                     <span class="link-ingresar">Hola, <?php echo htmlspecialchars($_SESSION["usuario_nombre"]); ?></span>
                     <a href="logout.php" class="btn-publicar">Salir</a>

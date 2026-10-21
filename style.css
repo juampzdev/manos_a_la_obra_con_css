@@ -12,12 +12,37 @@
     --texto: #1f2937;           /* casi negro */
     --texto-suave: #6b7280;     /* gris para textos secundarios */
     --fondo: #f6f7f9;           /* gris muy claro de fondo */
-    --blanco: #ffffff;
+    --blanco: #ffffff;          /* texto sobre los botones naranjas */
+    --tarjeta: #ffffff;         /* fondo de tarjetas, cajas, encabezado y campos */
     --borde: #e5e7eb;
+    --borde-campo: #d1d5db;     /* borde de los campos de los formularios */
+    --hero-fin: #ffe0cc;        /* segundo color del degradado de la portada */
     --oscuro: #1e293b;          /* azul oscuro del pie de página */
     --radio: 12px;              /* qué tan redondeadas son las esquinas */
     --sombra: 0 2px 10px rgba(0, 0, 0, 0.06);
 }
+
+/* ---------- Modo oscuro ----------
+   tema.php guarda la elección en una cookie y cada página le pone
+   la clase "oscuro" al <body>. Acá solo cambiamos el valor de las
+   variables: como todo el sitio usa var(--...), se actualiza solo. */
+body.oscuro {
+    --primario-suave: #3b2314;  /* naranja muy oscuro para fondos */
+    --texto: #e5e7eb;           /* casi blanco */
+    --texto-suave: #9ca3af;
+    --fondo: #111827;           /* casi negro */
+    --tarjeta: #1f2937;         /* un poco más claro que el fondo */
+    --borde: #374151;
+    --borde-campo: #4b5563;
+    --hero-fin: #111827;
+    --oscuro: #0b1120;
+    --sombra: 0 2px 10px rgba(0, 0, 0, 0.4);
+    color-scheme: dark;         /* el navegador también oscurece calendarios, listas y barras */
+}
+/* Algunos colores no son variables y hay que cambiarlos aparte */
+body.oscuro .profesional-info .oficio { color: #fdba74; }
+body.oscuro .mensaje-error { background: #3f1d1d; color: #fca5a5; }
+body.oscuro .mensaje-ok    { background: #14301f; color: #86efac; }
 
 /* ---------- Base ---------- */
 * { box-sizing: border-box; }
@@ -74,7 +99,7 @@ h1, h2, h3 { line-height: 1.2; }
 
 /* ---------- Encabezado ---------- */
 .header-principal {
-    background: var(--blanco);
+    background: var(--tarjeta);
     border-bottom: 1px solid var(--borde);
     position: sticky;      /* queda fijo arriba al bajar */
     top: 0;
@@ -115,9 +140,10 @@ h1, h2, h3 { line-height: 1.2; }
     border-right: none;
     border-radius: 8px 0 0 8px;
     font: inherit;
+    color: var(--texto);
     background: var(--fondo);
 }
-.buscador input:focus { outline: 2px solid var(--primario); background: var(--blanco); }
+.buscador input:focus { outline: 2px solid var(--primario); background: var(--tarjeta); }
 .buscador button {
     padding: 0 16px;
     border: none;
@@ -141,6 +167,22 @@ h1, h2, h3 { line-height: 1.2; }
 a.link-ingresar:hover { color: var(--primario); }
 .acciones .btn-publicar { padding: 8px 16px; }
 
+/* Botón redondo de modo oscuro (🌙 / ☀️) */
+.boton-tema {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1px solid var(--borde);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    transition: border-color 0.2s;
+}
+.boton-tema:hover { border-color: var(--primario); }
+
 .barra-menu {
     max-width: 1100px;
     margin: 0 auto;
@@ -163,9 +205,25 @@ a.link-ingresar:hover { color: var(--primario); }
     border-bottom-color: var(--primario);
 }
 
+/* ---------- Aviso "Completá tu perfil" (profesional sin perfil) ---------- */
+.aviso-perfil {
+    background: var(--primario-suave);
+    border-bottom: 3px solid var(--primario);
+    padding: 14px 0;
+}
+.aviso-perfil .contenedor {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;            /* en celular el botón baja abajo del texto */
+}
+.aviso-perfil p { margin: 0; }
+.aviso-perfil .boton { padding: 8px 18px; flex-shrink: 0; }
+
 /* ---------- Portada (hero) ---------- */
 .hero {
-    background: linear-gradient(135deg, var(--primario-suave), #ffe0cc);
+    background: linear-gradient(135deg, var(--primario-suave), var(--hero-fin));
     padding: 70px 0;
 }
 .hero-texto { max-width: 620px; }
@@ -191,7 +249,7 @@ a.link-ingresar:hover { color: var(--primario); }
     display: block;              /* ahora es un link <a>, que por defecto va en línea */
     text-decoration: none;
     color: var(--texto);
-    background: var(--blanco);
+    background: var(--tarjeta);
     border: 1px solid var(--borde);
     border-radius: var(--radio);
     padding: 22px 12px;
@@ -224,7 +282,7 @@ a.link-ingresar:hover { color: var(--primario); }
     gap: 20px;
 }
 .profesional-card {
-    background: var(--blanco);
+    background: var(--tarjeta);
     border: 1px solid var(--borde);
     border-radius: var(--radio);
     padding: 22px;
@@ -291,7 +349,7 @@ a.link-ingresar:hover { color: var(--primario); }
 .contenedor-angosto { max-width: 760px; }   /* el perfil se lee mejor más angosto */
 
 .perfil-caja {
-    background: var(--blanco);
+    background: var(--tarjeta);
     border: 1px solid var(--borde);
     border-radius: var(--radio);
     padding: 24px;
@@ -348,7 +406,7 @@ a.link-ingresar:hover { color: var(--primario); }
 .formulario {
     width: 100%;
     max-width: 480px;
-    background: var(--blanco);
+    background: var(--tarjeta);
     padding: 32px;
     border-radius: 16px;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
@@ -376,9 +434,9 @@ a.link-ingresar:hover { color: var(--primario); }
     font: inherit;
     font-weight: 400;
     padding: 11px 13px;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--borde-campo);
     border-radius: 8px;
-    background: var(--blanco);
+    background: var(--tarjeta);
     color: var(--texto);
     transition: border-color 0.2s, box-shadow 0.2s;
 }

@@ -3,6 +3,9 @@
 session_start();
 require "config.php";
 
+// ¿Eligió modo oscuro? Lo guarda tema.php en una cookie
+$modo_oscuro = ($_COOKIE["tema"] ?? "") === "oscuro";
+
 if (isset($_SESSION["usuario_id"])) {
     header("Location: index.php");
     exit;
@@ -48,7 +51,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <title>Ingresar | Manos a la Obra</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="pagina-form">
+<body class="pagina-form <?php echo $modo_oscuro ? "oscuro" : ""; ?>">
 
     <form action="login.php" method="post" class="formulario">
         <a href="index.php" class="volver">← Volver al inicio</a>

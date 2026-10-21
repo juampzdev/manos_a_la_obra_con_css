@@ -4,6 +4,9 @@
 session_start();
 require "config.php";
 
+// ¿Eligió modo oscuro? Lo guarda tema.php en una cookie
+$modo_oscuro = ($_COOKIE["tema"] ?? "") === "oscuro";
+
 // Solo pueden entrar profesionales logueados
 if (!isset($_SESSION["usuario_id"])) {
     header("Location: login.php");
@@ -87,7 +90,7 @@ $oficio_actual = $error !== null ? ($_POST["profesion"] ?? "") : ($perfil["ofici
     <title>Mi perfil profesional | Manos a la Obra</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="pagina-form">
+<body class="pagina-form <?php echo $modo_oscuro ? "oscuro" : ""; ?>">
 
     <form action="postular.php" method="post" class="formulario formulario-ancho">
         <a href="index.php" class="volver">← Volver al inicio</a>

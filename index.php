@@ -4,6 +4,9 @@
 session_start();
 require "config.php";
 
+// ¿Eligió modo oscuro? Lo guarda tema.php en una cookie
+$modo_oscuro = ($_COOKIE["tema"] ?? "") === "oscuro";
+
 // Lo que el usuario buscó o el oficio que tocó (llegan por la dirección:
 // index.php?buscar=pintor  o  index.php?oficio=Plomero)
 $buscar = trim($_GET["buscar"] ?? "");
@@ -69,6 +72,17 @@ if (!isset($_SESSION["usuario_id"])) {
 } else {
     $link_publicar = "";                          // cliente: no publica
 }
+
+// Si es un profesional que todavía no completó su perfil (oficio vacío),
+// le mostramos un aviso arriba, porque mientras tanto no aparece en el inicio
+$falta_perfil = false;
+if (($_SESSION["usuario_tipo"] ?? "") === "profesional") {
+    $consulta_perfil = $conexion->prepare("SELECT oficio FROM profesionales WHERE id = ?");
+    $consulta_perfil->bind_param("i", $_SESSION["usuario_id"]);
+    $consulta_perfil->execute();
+    $fila = $consulta_perfil->get_result()->fetch_assoc();
+    $falta_perfil = $fila && $fila["oficio"] === null;
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -80,7 +94,8 @@ if (!isset($_SESSION["usuario_id"])) {
     <link rel="stylesheet" href="style.css">
 </head>
 
-<body>
+<!-- Con modo oscuro, el body lleva la clase "oscuro" y style.css cambia los colores -->
+<body class="<?php echo $modo_oscuro ? "oscuro" : ""; ?>">
 
     <header class="header-principal">
         <div class="barra-superior">
@@ -94,6 +109,10 @@ if (!isset($_SESSION["usuario_id"])) {
                 <button type="submit" aria-label="Buscar">🔍</button>
             </form>
             <div class="acciones">
+                <!-- Botón de modo oscuro: tema.php cambia el modo y vuelve a esta página -->
+                <a href="tema.php" class="boton-tema" title="<?php echo $modo_oscuro ? "Activar modo claro" : "Activar modo oscuro"; ?>">
+                    <?php echo $modo_oscuro ? "☀️" : "🌙"; ?>
+                </a>
                 <?php if (isset($_SESSION["usuario_nombre"])): ?>
                     <!-- Si hay sesion iniciada, mostramos el nombre y el boton de Salir -->
                     <span class="link-ingresar">Hola, <?php echo htmlspecialchars($_SESSION["usuario_nombre"]); ?></span>
@@ -117,6 +136,16 @@ if (!isset($_SESSION["usuario_id"])) {
         </nav>
     </header>
 
+    <?php if ($falta_perfil): ?>
+        <!-- Aviso para el profesional que todavía no cargó su perfil -->
+        <div class="aviso-perfil">
+            <div class="contenedor">
+                <p>👋 <strong>¡Bienvenido/a, <?php echo htmlspecialchars($_SESSION["usuario_nombre"]); ?>!</strong>
+                    Completá tu perfil para aparecer en el inicio y que los clientes te encuentren.</p>
+                <a href="postular.php" class="boton boton-lleno">Completar mi perfil</a>
+            </div>
+        </div>
+    <?php endif; ?>
 
     <section class="hero">
         <div class="contenedor">

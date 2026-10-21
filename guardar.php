@@ -73,10 +73,7 @@ $_SESSION["usuario_nombre"]   = $nombre;
 $_SESSION["usuario_apellido"] = $apellido;
 $_SESSION["usuario_tipo"]     = $tipo;
 
-// El profesional va a completar su perfil; el cliente vuelve al inicio
-if ($tipo === "profesional") {
-    header("Location: postular.php");
-} else {
-    header("Location: index.php");
-}
+// Cliente y profesional vuelven al inicio ya logueados.
+// El profesional completa su perfil cuando quiera, con el botón "Postular servicio" del encabezado.
+header("Location: index.php");
 exit;

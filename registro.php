@@ -2,6 +2,9 @@
 // Pantalla para crear una cuenta nueva (antes era login.html)
 session_start();
 
+// ¿Eligió modo oscuro? Lo guarda tema.php en una cookie
+$modo_oscuro = ($_COOKIE["tema"] ?? "") === "oscuro";
+
 // Si ya está logueado no tiene sentido registrarse de nuevo
 if (isset($_SESSION["usuario_id"])) {
     header("Location: index.php");
@@ -25,7 +28,7 @@ $error = $errores[$_GET["error"] ?? ""] ?? null;
     <title>Crear cuenta | Manos a la Obra</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="pagina-form">
+<body class="pagina-form <?php echo $modo_oscuro ? "oscuro" : ""; ?>">
 
     <form action="guardar.php" method="post" class="formulario">
         <a href="index.php" class="volver">← Volver al inicio</a>
