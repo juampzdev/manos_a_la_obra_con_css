@@ -29,6 +29,7 @@ Proyecto de la materia **Práctica Profesionalizante** (Analista Funcional en Si
 | `login.php` | Formulario para ingresar. Busca la cuenta en las dos tablas. |
 | `logout.php` | No se ve. Cierra la sesión. |
 | `postular.php` | El profesional completa o edita su perfil. |
+| `como_funciona.php` | Explica cómo usar el sitio. Cambia según quién mira: sin cuenta, cliente (con sus reseñas dejadas) o profesional (con el estado de su perfil). |
 | `contacto.php` | Formulario de contacto. Manda el mensaje y hasta 3 imágenes por mail a iseiclaude@gmail.com. |
 | `config.php` | Datos de conexión a la base. Lo incluyen todas las páginas. |
 | `style.css` | Todos los estilos del sitio. |

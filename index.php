@@ -169,7 +169,7 @@ if (($_SESSION["usuario_tipo"] ?? "") === "profesional") {
             <a href="#oficios">Oficios</a>
             <a href="#cerca">Cerca de vos</a>
             <a href="#profesionales">Profesionales</a>
-            <a href="#">Cómo funciona</a>
+            <a href="como_funciona.php">Cómo funciona</a>
             <a href="contacto.php">Contacto</a>
         </nav>
     </header>

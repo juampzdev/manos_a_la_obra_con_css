@@ -423,6 +423,60 @@ a.link-ingresar:hover { color: var(--primario); }
 .formulario.formulario-plano { max-width: none; padding: 0; box-shadow: none; border-radius: 0; }
 
 /* =========================================================
+   Cómo funciona (como_funciona.php)
+   Usa las mismas cajas blancas del perfil (.perfil-caja)
+   ========================================================= */
+.como-titulo { margin: 8px 0 6px; font-size: 2rem; }
+.como-intro { margin: 0; color: var(--texto-suave); font-size: 1.05rem; }
+
+/* Pasos numerados: el número va adentro de un círculo naranja.
+   counter-reset / counter-increment hacen que el CSS cuente solo 1, 2, 3... */
+.pasos {
+    list-style: none;
+    margin: 0 0 12px;
+    padding: 0;
+    counter-reset: paso;
+}
+.pasos li {
+    counter-increment: paso;
+    position: relative;
+    padding: 4px 0 12px 44px;   /* espacio a la izquierda para el círculo */
+}
+.pasos li::before {
+    content: counter(paso);      /* escribe el número del paso */
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--primario);
+    color: var(--blanco);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Caja con el estado de la cuenta: dato a la izquierda, botón a la derecha */
+.estado-cuenta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+.estado-cuenta .mensaje-error { flex: 1; }
+.estado-numero { display: block; font-size: 1.8rem; font-weight: 700; }
+
+.como-acciones { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 22px; }
+
+.pregunta-frecuente { padding: 12px 0; border-top: 1px solid var(--borde); }
+.pregunta-frecuente:first-of-type { border-top: none; padding-top: 0; }
+.pregunta-frecuente h3 { margin: 0 0 4px; font-size: 1rem; }
+.pregunta-frecuente p { margin: 0; color: var(--texto-suave); }
+
+/* =========================================================
    Formularios (login, crear cuenta, perfil profesional)
    ========================================================= */
 .pagina-form {
@@ -565,4 +619,5 @@ a.link-ingresar:hover { color: var(--primario); }
     .formulario.formulario-plano { padding: 0; }
     .perfil-datos { grid-template-columns: 1fr; }
     .perfil-cabecera { flex-direction: column; text-align: center; }
+    .como-titulo { font-size: 1.6rem; }
 }
