@@ -11,11 +11,15 @@ if (!isset($profesional)) {
     exit;
 }
 ?>
-<div class="profesional-card">
+<!-- Si tiene el plan Destacado, la tarjeta lleva la clase "destacada" y el borde se pinta de naranja -->
+<div class="profesional-card <?php echo !empty($profesional["destacado"]) ? "destacada" : ""; ?>">
     <div class="profesional-avatar"><?php echo htmlspecialchars($profesional["iniciales"]); ?></div>
     <div class="profesional-info">
         <?php if ($etiqueta !== ""): ?>
             <span class="etiqueta-cerca"><?php echo htmlspecialchars($etiqueta); ?></span>
+        <?php endif; ?>
+        <?php if (!empty($profesional["destacado"])): ?>
+            <span class="insignia-destacado">⭐ Destacado</span>
         <?php endif; ?>
         <h3><?php echo htmlspecialchars($profesional["nombre"] . " " . $profesional["apellido"]); ?></h3>
         <p class="oficio"><?php echo htmlspecialchars($profesional["oficio"]); ?></p>

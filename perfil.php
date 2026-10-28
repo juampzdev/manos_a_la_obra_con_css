@@ -63,7 +63,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 // LEFT JOIN trae el nombre del barrio. Como las dos tablas tienen una columna "id",
 // hay que aclarar de cuál hablamos: profesionales.id
 $consulta = $conexion->prepare(
-    "SELECT profesionales.*, barrios.barrio
+    "SELECT profesionales.*, barrios.barrio,
+            (destacado_hasta IS NOT NULL AND destacado_hasta >= CURDATE()) AS destacado
      FROM profesionales
      LEFT JOIN barrios ON barrios.id = profesionales.barrio_id
      WHERE profesionales.id = ?
@@ -147,9 +148,12 @@ function estrellas($puntaje) {
             <?php else: ?>
 
                 <!-- Datos del profesional -->
-                <div class="perfil-caja perfil-cabecera">
+                <div class="perfil-caja perfil-cabecera <?php echo $profesional["destacado"] ? "destacada" : ""; ?>">
                     <div class="profesional-avatar perfil-avatar"><?php echo htmlspecialchars($profesional["iniciales"]); ?></div>
                     <div class="profesional-info">
+                        <?php if ($profesional["destacado"]): ?>
+                            <span class="insignia-destacado">⭐ Destacado</span>
+                        <?php endif; ?>
                         <h1><?php echo htmlspecialchars($profesional["nombre"] . " " . $profesional["apellido"]); ?></h1>
                         <p class="oficio"><?php echo htmlspecialchars($profesional["oficio"]); ?></p>
                         <p class="valoracion">⭐ <?php echo $profesional["valoracion"]; ?> (<?php echo $profesional["cantidad_resenas"]; ?> reseñas)</p>

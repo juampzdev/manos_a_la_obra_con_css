@@ -10,7 +10,7 @@ $modo_oscuro = ($_COOKIE["tema"] ?? "") === "oscuro";
 // A dónde llegan los mensajes
 $correo_destino = "iseiclaude@gmail.com";
 
-$asuntos = ["Consulta general", "Problema con mi cuenta", "Reportar un profesional", "Sugerencia"];
+$asuntos = ["Consulta general", "Problema con mi cuenta", "Reportar un profesional", "Plan Destacado", "Sugerencia"];
 
 // Límites de las imágenes adjuntas
 $max_imagenes = 3;
@@ -22,7 +22,9 @@ $error = null;
 // Si está logueado, ya le completamos el nombre
 $nombre  = trim(($_SESSION["usuario_nombre"] ?? "") . " " . ($_SESSION["usuario_apellido"] ?? ""));
 $email   = "";
-$asunto  = "";
+// El asunto puede venir elegido desde otra página: contacto.php?asunto=Plan+Destacado
+// Solo lo usamos si es uno de la lista
+$asunto  = in_array($_GET["asunto"] ?? "", $asuntos) ? $_GET["asunto"] : "";
 $mensaje = "";
 
 // ---------- Enviar el mensaje ----------

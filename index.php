@@ -19,7 +19,10 @@ $oficio = trim($_GET["oficio"] ?? "");
 // Si hay una búsqueda o un oficio elegido, se agrega esa condición.
 // LEFT JOIN trae el nombre del barrio desde la tabla barrios. Es LEFT para no dejar
 // afuera a los profesionales que todavía no eligieron barrio (barrio_id vacío).
-$sql = "SELECT profesionales.*, barrios.barrio
+// La columna "destacado" la armamos en la consulta: vale 1 si tiene el plan Destacado
+// vigente (fecha de hoy o futura) y 0 si no lo tiene o ya venció.
+$sql = "SELECT profesionales.*, barrios.barrio,
+               (destacado_hasta IS NOT NULL AND destacado_hasta >= CURDATE()) AS destacado
         FROM profesionales
         LEFT JOIN barrios ON barrios.id = profesionales.barrio_id
         WHERE oficio IS NOT NULL
@@ -40,7 +43,8 @@ if ($buscar !== "") {
     $tipos .= "ssssss";
     array_push($valores, $patron, $patron, $patron, $patron, $patron, $patron);
 }
-$sql .= " ORDER BY valoracion DESC, cantidad_resenas DESC";   // mejor valorados primero
+// Primero los destacados (1 antes que 0) y después los mejor valorados
+$sql .= " ORDER BY destacado DESC, valoracion DESC, cantidad_resenas DESC";
 
 $consulta = $conexion->prepare($sql);
 if ($tipos !== "") {
@@ -72,17 +76,19 @@ $barrio_elegido = (int) ($_GET["barrio"] ?? 0);
 $cercanos = [];
 if (isset($barrios[$barrio_elegido])) {
     // Solo los de la MISMA ZONA que el barrio elegido.
-    // ORDER BY (barrios.id = ?) DESC pone primero a los del mismo barrio:
+    // Primero van los que tienen el plan Destacado. Después,
+    // (barrios.id = ?) DESC pone primero a los del mismo barrio:
     // la comparación da 1 si es el mismo barrio y 0 si no, y DESC ordena de mayor a menor.
     // LIMIT 6 trae como mucho seis.
     $consulta_cerca = $conexion->prepare(
-        "SELECT profesionales.*, barrios.barrio
+        "SELECT profesionales.*, barrios.barrio,
+                (destacado_hasta IS NOT NULL AND destacado_hasta >= CURDATE()) AS destacado
          FROM profesionales
          JOIN barrios ON barrios.id = profesionales.barrio_id
          WHERE oficio IS NOT NULL
            AND (fecha_baja IS NULL OR fecha_baja >= CURDATE())
            AND barrios.zona = ?
-         ORDER BY (barrios.id = ?) DESC, valoracion DESC
+         ORDER BY destacado DESC, (barrios.id = ?) DESC, valoracion DESC
          LIMIT 6"
     );
     $zona_elegida = $barrios[$barrio_elegido]["zona"];

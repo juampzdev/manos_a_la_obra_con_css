@@ -59,6 +59,32 @@ Proyecto de la materia **Práctica Profesionalizante** (Analista Funcional en Si
 > ⚠️ `database.sql` borra las tablas si ya existían: al volver a ejecutarlo se pierden las cuentas
 > creadas y quedan solo las de ejemplo.
 
+## Plan Destacado
+
+Publicar el perfil es gratis. El **plan Destacado** es un abono mensual (la forma de monetizar
+el sitio): el profesional aparece **primero** en el inicio, en su oficio y en "Cerca de vos",
+con la insignia **⭐ Destacado** y el borde naranja en su tarjeta y en su perfil.
+
+No hay pagos en línea: cuando un profesional paga, se activa a mano desde SQLyog.
+Se guarda en la columna `destacado_hasta` de `profesionales` (hasta qué día dura el plan).
+Cuando esa fecha pasa, el plan vence solo y vuelve a ser un perfil normal.
+
+```sql
+-- Activar el plan por un mes desde hoy
+UPDATE profesionales SET destacado_hasta = DATE_ADD(CURDATE(), INTERVAL 1 MONTH)
+WHERE email = 'juan@ejemplo.com';
+
+-- Sacar el plan
+UPDATE profesionales SET destacado_hasta = NULL WHERE email = 'juan@ejemplo.com';
+```
+
+En los datos de ejemplo, **Carlos** tiene el plan activo. Los profesionales que lo quieren lo
+piden desde "Cómo funciona" → **Quiero ser Destacado**, que abre Contacto con el asunto "Plan Destacado".
+
+> Si ya tenés la base cargada y no querés perder las cuentas creadas, en vez de volver a ejecutar
+> `database.sql` podés agregar solo la columna nueva:
+> `ALTER TABLE profesionales ADD destacado_hasta DATE NULL AFTER cantidad_resenas;`
+
 ## Envío de mails (formulario de contacto)
 
 `contacto.php` usa la función `mail()` de PHP. XAMPP no manda mails si no se le configura una

@@ -25,7 +25,7 @@ if ($tipo === "cliente") {
 $mi_perfil = null;
 if ($tipo === "profesional") {
     $consulta = $conexion->prepare(
-        "SELECT oficio, fecha_baja, valoracion, cantidad_resenas FROM profesionales WHERE id = ?"
+        "SELECT oficio, fecha_baja, valoracion, cantidad_resenas, destacado_hasta FROM profesionales WHERE id = ?"
     );
     $consulta->bind_param("i", $_SESSION["usuario_id"]);
     $consulta->execute();
@@ -34,6 +34,9 @@ if ($tipo === "profesional") {
 // Mismas condiciones que usa el inicio para mostrar a un profesional
 $perfil_completo = $mi_perfil && $mi_perfil["oficio"] !== null;
 $dado_de_baja    = $mi_perfil && $mi_perfil["fecha_baja"] !== null && $mi_perfil["fecha_baja"] < date("Y-m-d");
+// ¿Tiene el plan Destacado vigente? date("Y-m-d") es la fecha de hoy, por ejemplo "2026-10-28".
+// Las fechas en ese formato se pueden comparar como texto: "2026-11-28" >= "2026-10-28"
+$es_destacado    = $mi_perfil && $mi_perfil["destacado_hasta"] !== null && $mi_perfil["destacado_hasta"] >= date("Y-m-d");
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -180,6 +183,25 @@ $dado_de_baja    = $mi_perfil && $mi_perfil["fecha_baja"] !== null && $mi_perfil
                     </ol>
                 </div>
 
+                <!-- Plan Destacado: cambia según si lo tiene o no -->
+                <div class="perfil-caja <?php echo $es_destacado ? "destacada" : ""; ?>">
+                    <h2>⭐ Plan Destacado</h2>
+                    <?php if ($es_destacado): ?>
+                        <p class="mensaje-ok">Tu plan Destacado está activo hasta el
+                            <strong><?php echo date("d/m/Y", strtotime($mi_perfil["destacado_hasta"])); ?></strong>.</p>
+                        <p>Mientras esté activo, aparecés primero en el inicio, en tu oficio y en "Cerca de vos",
+                            con la insignia "⭐ Destacado" en tu tarjeta y en tu perfil.</p>
+                    <?php else: ?>
+                        <p>Publicar tu perfil es gratis. Si querés más visibilidad, con el plan Destacado (mensual):</p>
+                        <ol class="pasos">
+                            <li>Aparecés <strong>primero</strong> en el inicio, en tu oficio y en "Cerca de vos".</li>
+                            <li>Tu tarjeta y tu perfil muestran la insignia <strong>"⭐ Destacado"</strong>.</li>
+                            <li>Tus reseñas y tu valoración siguen siendo las mismas: el plan no cambia lo que opinan los clientes.</li>
+                        </ol>
+                        <a href="contacto.php?asunto=<?php echo urlencode("Plan Destacado"); ?>" class="boton boton-lleno">Quiero ser Destacado</a>
+                    <?php endif; ?>
+                </div>
+
                 <div class="perfil-caja">
                     <h2>Cómo te encuentran los clientes</h2>
                     <ol class="pasos">
@@ -207,6 +229,11 @@ $dado_de_baja    = $mi_perfil && $mi_perfil["fecha_baja"] !== null && $mi_perfil
                 <div class="pregunta-frecuente">
                     <h3>¿Puedo tener una cuenta de cliente y otra de profesional?</h3>
                     <p>Sí, pero con emails distintos. Un mismo email solo puede tener una cuenta.</p>
+                </div>
+                <div class="pregunta-frecuente">
+                    <h3>¿Qué significa "⭐ Destacado"?</h3>
+                    <p>Son profesionales con el plan Destacado: pagan un abono mensual para aparecer primero.
+                        Las reseñas y la valoración no se pueden comprar: las escriben solo los clientes.</p>
                 </div>
                 <div class="pregunta-frecuente">
                     <h3>¿Se muestra mi dirección?</h3>

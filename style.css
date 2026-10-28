@@ -306,6 +306,22 @@ a.link-ingresar:hover { color: var(--primario); }
     margin-bottom: 4px;
 }
 
+/* Plan Destacado: borde naranja y la insignia arriba del nombre.
+   Se usa en las tarjetas del inicio, en el perfil y en "Cómo funciona".
+   Con dos clases juntas la regla gana sobre el borde gris de .profesional-card y .perfil-caja */
+.profesional-card.destacada,
+.perfil-caja.destacada { border: 2px solid var(--primario); }
+.insignia-destacado {
+    display: inline-block;
+    background: var(--primario);
+    color: var(--blanco);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 20px;
+    margin-bottom: 6px;
+}
+
 /* Tarjetas de profesionales */
 .profesionales-grid {
     display: grid;

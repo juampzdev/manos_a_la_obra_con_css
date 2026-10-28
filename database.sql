@@ -83,6 +83,9 @@ CREATE TABLE profesionales (
     -- un cliente deja una reseña (ver perfil.php)
     valoracion DECIMAL(2,1) DEFAULT 0,
     cantidad_resenas INT DEFAULT 0,
+    -- Plan Destacado (pago mensual): hasta qué día aparece primero y con la insignia.
+    -- NULL = no tiene el plan. Si la fecha ya pasó, el plan venció y vuelve a ser normal.
+    destacado_hasta DATE NULL,
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (barrio_id) REFERENCES barrios(id)
 );
@@ -126,6 +129,11 @@ INSERT INTO resenas (profesional_id, cliente_id, puntaje, comentario) VALUES
 (1, 2, 4, 'Buen trabajo, llegó un poco tarde pero avisó.'),
 (2, 1, 5, 'Pintó todo el living en dos días y dejó todo limpio.'),
 (3, 2, 4, 'Solucionó la pérdida del baño rápido y a buen precio.');
+
+-- Carlos tiene el plan Destacado por un mes desde hoy, para ver cómo funciona.
+-- DATE_ADD(CURDATE(), INTERVAL 1 MONTH) = la fecha de hoy más un mes
+UPDATE profesionales SET destacado_hasta = DATE_ADD(CURDATE(), INTERVAL 1 MONTH)
+WHERE email = 'carlos@ejemplo.com';
 
 -- Calculamos el promedio y la cantidad a partir de las reseñas cargadas
 UPDATE profesionales
