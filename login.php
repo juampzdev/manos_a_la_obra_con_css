@@ -31,6 +31,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     // password_verify compara lo que escribió con la contraseña encriptada
     if ($usuario && password_verify($password, $usuario["password"])) {
+        // Número de sesión nuevo al iniciar sesión (ver la explicación en guardar.php)
+        session_regenerate_id(true);
         $_SESSION["usuario_id"]       = $usuario["id"];
         $_SESSION["usuario_nombre"]   = $usuario["nombre"];
         $_SESSION["usuario_apellido"] = $usuario["apellido"];

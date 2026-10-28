@@ -23,7 +23,9 @@ if (!isset($profesional)) {
         <?php endif; ?>
         <h3><?php echo htmlspecialchars($profesional["nombre"] . " " . $profesional["apellido"]); ?></h3>
         <p class="oficio"><?php echo htmlspecialchars($profesional["oficio"]); ?></p>
-        <p class="valoracion">⭐ <?php echo $profesional["valoracion"]; ?> (<?php echo $profesional["cantidad_resenas"]; ?> reseñas)</p>
+        <!-- "1 reseña" en singular y "2 reseñas" en plural -->
+        <p class="valoracion">⭐ <?php echo $profesional["valoracion"]; ?>
+            (<?php echo $profesional["cantidad_resenas"] . ($profesional["cantidad_resenas"] == 1 ? " reseña" : " reseñas"); ?>)</p>
         <!-- Se muestra el barrio y la ciudad, nunca el domicilio exacto -->
         <p class="ubicacion">📍 <?php
             if (!empty($profesional["barrio"])) {

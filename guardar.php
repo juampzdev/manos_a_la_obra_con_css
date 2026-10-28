@@ -30,6 +30,13 @@ if (strlen($password) < 6) {
     header("Location: registro.php?error=corta");
     exit;
 }
+// Los mismos largos máximos que tienen las columnas en la base (VARCHAR(60) y VARCHAR(120)).
+// Si mandáramos un texto más largo, MySQL daría error y la página se cortaría.
+// mb_strlen cuenta bien las letras con tilde (strlen las cuenta como 2).
+if (mb_strlen($nombre) > 60 || mb_strlen($apellido) > 60 || mb_strlen($email) > 120) {
+    header("Location: registro.php?error=largo");
+    exit;
+}
 
 // ¿Ese email ya está usado? Hay que revisar en LAS DOS tablas,
 // para que una misma persona no tenga una cuenta de cliente y otra de profesional
@@ -67,7 +74,10 @@ if ($tipo === "profesional") {
 $insertar->execute();
 
 // Lo dejamos logueado directamente.
+// session_regenerate_id cambia el número de sesión al iniciar sesión: así, si alguien
+// conocía el número viejo (por ejemplo en una computadora compartida), no le sirve.
 // usuario_tipo nos dice en qué tabla está su usuario_id
+session_regenerate_id(true);
 $_SESSION["usuario_id"]       = $conexion->insert_id;
 $_SESSION["usuario_nombre"]   = $nombre;
 $_SESSION["usuario_apellido"] = $apellido;

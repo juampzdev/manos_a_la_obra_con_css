@@ -14,12 +14,34 @@ $id = (int) ($_GET["id"] ?? 0);
 $es_cliente = ($_SESSION["usuario_tipo"] ?? "") === "cliente";
 $error = null;
 
-// ---------- Guardar una reseña nueva ----------
+// ---------- 1. Datos del profesional ----------
+// Se busca ANTES de guardar una reseña, para no aceptar reseñas de profesionales
+// que no existen o que ya no están en actividad.
+// Mismas condiciones que en el inicio: perfil completo y en actividad.
+// Si no lo encuentra, $profesional queda en null y la página muestra "Perfil no disponible".
+// LEFT JOIN trae el nombre del barrio. Como las dos tablas tienen una columna "id",
+// hay que aclarar de cuál hablamos: profesionales.id
+$consulta = $conexion->prepare(
+    "SELECT profesionales.*, barrios.barrio,
+            (destacado_hasta IS NOT NULL AND destacado_hasta >= CURDATE()) AS destacado
+     FROM profesionales
+     LEFT JOIN barrios ON barrios.id = profesionales.barrio_id
+     WHERE profesionales.id = ?
+       AND oficio IS NOT NULL
+       AND (fecha_baja IS NULL OR fecha_baja >= CURDATE())"
+);
+$consulta->bind_param("i", $id);
+$consulta->execute();
+$profesional = $consulta->get_result()->fetch_assoc();
+
+// ---------- 2. Guardar una reseña nueva ----------
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $puntaje    = (int) ($_POST["puntaje"] ?? 0);
     $comentario = trim($_POST["comentario"] ?? "");
 
-    if (!$es_cliente) {
+    if (!$profesional) {
+        $error = "Este profesional no está disponible.";
+    } elseif (!$es_cliente) {
         $error = "Solo los clientes pueden dejar reseñas.";
     } elseif ($puntaje < 1 || $puntaje > 5 || $comentario === "") {
         $error = "Elegí un puntaje y escribí un comentario.";
@@ -58,24 +80,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 }
 
-// ---------- Datos del profesional ----------
-// Mismas condiciones que en el inicio: perfil completo y en actividad.
-// LEFT JOIN trae el nombre del barrio. Como las dos tablas tienen una columna "id",
-// hay que aclarar de cuál hablamos: profesionales.id
-$consulta = $conexion->prepare(
-    "SELECT profesionales.*, barrios.barrio,
-            (destacado_hasta IS NOT NULL AND destacado_hasta >= CURDATE()) AS destacado
-     FROM profesionales
-     LEFT JOIN barrios ON barrios.id = profesionales.barrio_id
-     WHERE profesionales.id = ?
-       AND oficio IS NOT NULL
-       AND (fecha_baja IS NULL OR fecha_baja >= CURDATE())"
-);
-$consulta->bind_param("i", $id);
-$consulta->execute();
-$profesional = $consulta->get_result()->fetch_assoc();
-
-// ---------- Sus reseñas, de la más nueva a la más vieja ----------
+// ---------- 3. Sus reseñas, de la más nueva a la más vieja ----------
 // JOIN trae el nombre del cliente que escribió cada reseña desde la tabla clientes
 $resenas = [];
 $ya_reseno = false;
@@ -156,7 +161,8 @@ function estrellas($puntaje) {
                         <?php endif; ?>
                         <h1><?php echo htmlspecialchars($profesional["nombre"] . " " . $profesional["apellido"]); ?></h1>
                         <p class="oficio"><?php echo htmlspecialchars($profesional["oficio"]); ?></p>
-                        <p class="valoracion">⭐ <?php echo $profesional["valoracion"]; ?> (<?php echo $profesional["cantidad_resenas"]; ?> reseñas)</p>
+                        <p class="valoracion">⭐ <?php echo $profesional["valoracion"]; ?>
+                            (<?php echo $profesional["cantidad_resenas"] . ($profesional["cantidad_resenas"] == 1 ? " reseña" : " reseñas"); ?>)</p>
                     </div>
                 </div>
 
@@ -223,9 +229,11 @@ function estrellas($puntaje) {
 
                             <label for="puntaje">Puntaje
                                 <select id="puntaje" name="puntaje" required>
-                                    <option value="" disabled selected>Elegí de 1 a 5 estrellas</option>
+                                    <!-- Si hubo un error, queda elegido el puntaje que había puesto -->
+                                    <?php $puntaje_elegido = (int) ($_POST["puntaje"] ?? 0); ?>
+                                    <option value="" disabled <?php echo $puntaje_elegido === 0 ? "selected" : ""; ?>>Elegí de 1 a 5 estrellas</option>
                                     <?php for ($i = 5; $i >= 1; $i--): ?>
-                                        <option value="<?php echo $i; ?>"><?php echo estrellas($i) . " (" . $i . ")"; ?></option>
+                                        <option value="<?php echo $i; ?>" <?php echo $puntaje_elegido === $i ? "selected" : ""; ?>><?php echo estrellas($i) . " (" . $i . ")"; ?></option>
                                     <?php endfor; ?>
                                 </select>
                             </label>

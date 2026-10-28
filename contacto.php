@@ -56,7 +56,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // una lista por cada dato: ["name"][0], ["name"][1]... ["tmp_name"][0], etc.
     // La posición (0, 1, 2) es la misma imagen en todas las listas.
     $adjuntos = [];
-    if ($error === null && isset($_FILES["imagenes"])) {
+    // is_array: nos aseguramos de que llegó una lista (si alguien manda el campo sin los []
+    // llega un solo archivo suelto y el for de abajo fallaría)
+    if ($error === null && isset($_FILES["imagenes"]) && is_array($_FILES["imagenes"]["name"])) {
         $archivos = $_FILES["imagenes"];
 
         for ($i = 0; $i < count($archivos["name"]); $i++) {

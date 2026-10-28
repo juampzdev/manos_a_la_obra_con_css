@@ -1,5 +1,6 @@
 <?php
-// Pantalla para crear una cuenta nueva (antes era login.html)
+// Pantalla para crear una cuenta nueva (cliente o profesional).
+// El formulario se manda a guardar.php, que valida los datos y crea la cuenta.
 session_start();
 
 // ¿Eligió modo oscuro? Lo guarda tema.php en una cookie
@@ -17,6 +18,7 @@ $errores = [
     "email"  => "Ese email no es válido.",
     "existe" => "Ya hay una cuenta con ese email.",
     "corta"  => "La contraseña tiene que tener al menos 6 caracteres.",
+    "largo"  => "El nombre y el apellido pueden tener hasta 60 letras, y el email hasta 120.",
 ];
 $error = $errores[$_GET["error"] ?? ""] ?? null;
 ?>
@@ -40,15 +42,15 @@ $error = $errores[$_GET["error"] ?? ""] ?? null;
 
         <div class="fila">
             <label>Nombre
-                <input type="text" name="nombre" required>
+                <input type="text" name="nombre" maxlength="60" required>
             </label>
             <label>Apellido
-                <input type="text" name="apellido" required>
+                <input type="text" name="apellido" maxlength="60" required>
             </label>
         </div>
 
         <label>Email
-            <input type="email" name="email" required>
+            <input type="email" name="email" maxlength="120" required>
         </label>
 
         <label>Contraseña

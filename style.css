@@ -1,10 +1,30 @@
 /* =========================================================
-   Manos a la Obra - estilos generales
-   Un solo archivo para todo el sitio (inicio + formularios).
-   Los colores están arriba como variables: si querés cambiar
-   el naranja por otro color, lo cambiás en un solo lugar.
+   Manos a la Obra - estilos de todo el sitio
+   Todas las páginas cargan este mismo archivo:
+   <link rel="stylesheet" href="style.css">
+
+   ÍNDICE (buscá el número con Ctrl+F, por ejemplo "4.")
+     1.  Variables de colores y medidas
+     2.  Modo oscuro
+     3.  Base (letra, fondo, contenedor)
+     4.  Botones
+     5.  Encabezado y menú
+     6.  Aviso "Completá tu perfil"
+     7.  Portada (hero)
+     8.  Secciones y tarjetas de oficios
+     9.  Profesionales cerca
+     10. Plan Destacado
+     11. Tarjetas de profesionales
+     12. Pie de página
+     13. Perfil del profesional (perfil.php)
+     14. Cómo funciona (como_funciona.php)
+     15. Formularios (login, registro, perfil, contacto)
+     16. Celulares y pantallas chicas (@media)
    ========================================================= */
 
+/* ---------- 1. Variables de colores y medidas ----------
+   Se definen una sola vez y se usan con var(--nombre).
+   Para cambiar el naranja de todo el sitio, alcanza con cambiar --primario. */
 :root {
     --primario: #e8590c;        /* naranja: botones y detalles */
     --primario-oscuro: #c2410c; /* naranja al pasar el mouse */
@@ -22,7 +42,7 @@
     --sombra: 0 2px 10px rgba(0, 0, 0, 0.06);
 }
 
-/* ---------- Modo oscuro ----------
+/* ---------- 2. Modo oscuro ----------
    tema.php guarda la elección en una cookie y cada página le pone
    la clase "oscuro" al <body>. Acá solo cambiamos el valor de las
    variables: como todo el sitio usa var(--...), se actualiza solo. */
@@ -44,7 +64,7 @@ body.oscuro .profesional-info .oficio { color: #fdba74; }
 body.oscuro .mensaje-error { background: #3f1d1d; color: #fca5a5; }
 body.oscuro .mensaje-ok    { background: #14301f; color: #86efac; }
 
-/* ---------- Base ---------- */
+/* ---------- 3. Base ---------- */
 * { box-sizing: border-box; }
 
 body {
@@ -64,7 +84,7 @@ h1, h2, h3 { line-height: 1.2; }
     padding: 0 20px;
 }
 
-/* ---------- Botones ---------- */
+/* ---------- 4. Botones ---------- */
 .boton,
 .btn-publicar {
     display: inline-block;
@@ -97,7 +117,7 @@ h1, h2, h3 { line-height: 1.2; }
     color: var(--blanco);
 }
 
-/* ---------- Encabezado ---------- */
+/* ---------- 5. Encabezado y menú ---------- */
 .header-principal {
     background: var(--tarjeta);
     border-bottom: 1px solid var(--borde);
@@ -205,7 +225,7 @@ a.link-ingresar:hover { color: var(--primario); }
     border-bottom-color: var(--primario);
 }
 
-/* ---------- Aviso "Completá tu perfil" (profesional sin perfil) ---------- */
+/* ---------- 6. Aviso "Completá tu perfil" (profesional sin perfil) ---------- */
 .aviso-perfil {
     background: var(--primario-suave);
     border-bottom: 3px solid var(--primario);
@@ -221,7 +241,7 @@ a.link-ingresar:hover { color: var(--primario); }
 .aviso-perfil p { margin: 0; }
 .aviso-perfil .boton { padding: 8px 18px; flex-shrink: 0; }
 
-/* ---------- Portada (hero) ---------- */
+/* ---------- 7. Portada (hero) ---------- */
 .hero {
     background: linear-gradient(135deg, var(--primario-suave), var(--hero-fin));
     padding: 70px 0;
@@ -231,7 +251,7 @@ a.link-ingresar:hover { color: var(--primario); }
 .hero p { font-size: 1.15rem; color: var(--texto-suave); margin: 0 0 26px; }
 .hero-botones { display: flex; gap: 12px; flex-wrap: wrap; }
 
-/* ---------- Secciones ---------- */
+/* ---------- 8. Secciones y tarjetas de oficios ---------- */
 .seccion { padding: 50px 0; }
 .seccion-titulo {
     font-size: 1.6rem;
@@ -275,7 +295,8 @@ a.link-ingresar:hover { color: var(--primario); }
 .ver-todos:hover { text-decoration: underline; }
 .sin-resultados { color: var(--texto-suave); }
 
-/* Profesionales cerca: fondo naranja clarito para separarla de las otras secciones */
+/* ---------- 9. Profesionales cerca ----------
+   Fondo naranja clarito para separarla de las otras secciones */
 .seccion-cerca { background: var(--primario-suave); }
 .elegir-barrio {
     display: flex;
@@ -306,7 +327,8 @@ a.link-ingresar:hover { color: var(--primario); }
     margin-bottom: 4px;
 }
 
-/* Plan Destacado: borde naranja y la insignia arriba del nombre.
+/* ---------- 10. Plan Destacado ----------
+   Borde naranja y la insignia arriba del nombre.
    Se usa en las tarjetas del inicio, en el perfil y en "Cómo funciona".
    Con dos clases juntas la regla gana sobre el borde gris de .profesional-card y .perfil-caja */
 .profesional-card.destacada,
@@ -322,7 +344,7 @@ a.link-ingresar:hover { color: var(--primario); }
     margin-bottom: 6px;
 }
 
-/* Tarjetas de profesionales */
+/* ---------- 11. Tarjetas de profesionales ---------- */
 .profesionales-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -365,7 +387,7 @@ a.link-ingresar:hover { color: var(--primario); }
 }
 .profesional-info .boton { margin-top: 12px; padding: 7px 16px; font-size: 0.9rem; }
 
-/* ---------- Pie de página ---------- */
+/* ---------- 12. Pie de página ---------- */
 .pie-pagina {
     background: var(--oscuro);
     color: #e2e8f0;
@@ -391,7 +413,7 @@ a.link-ingresar:hover { color: var(--primario); }
 .pie-ayuda p { margin: 0 0 10px; font-size: 1.1rem; }
 
 /* =========================================================
-   Perfil público del profesional (perfil.php)
+   13. Perfil público del profesional (perfil.php)
    ========================================================= */
 .contenedor-angosto { max-width: 760px; }   /* el perfil se lee mejor más angosto */
 
@@ -439,7 +461,7 @@ a.link-ingresar:hover { color: var(--primario); }
 .formulario.formulario-plano { max-width: none; padding: 0; box-shadow: none; border-radius: 0; }
 
 /* =========================================================
-   Cómo funciona (como_funciona.php)
+   14. Cómo funciona (como_funciona.php)
    Usa las mismas cajas blancas del perfil (.perfil-caja)
    ========================================================= */
 .como-titulo { margin: 8px 0 6px; font-size: 2rem; }
@@ -493,7 +515,8 @@ a.link-ingresar:hover { color: var(--primario); }
 .pregunta-frecuente p { margin: 0; color: var(--texto-suave); }
 
 /* =========================================================
-   Formularios (login, crear cuenta, perfil profesional)
+   15. Formularios (login, crear cuenta, perfil profesional, contacto)
+   Todos usan <body class="pagina-form"> y <form class="formulario">
    ========================================================= */
 .pagina-form {
     min-height: 100vh;
@@ -622,7 +645,8 @@ a.link-ingresar:hover { color: var(--primario); }
 .mensaje-ok    { background: #e7f6ec; color: #1d6b3a; border-color: #16a34a; }
 
 /* =========================================================
-   Celulares y pantallas chicas
+   16. Celulares y pantallas chicas
+   Estas reglas solo se aplican si la pantalla mide 760px o menos
    ========================================================= */
 @media (max-width: 760px) {
     .barra-superior { flex-wrap: wrap; gap: 12px; }

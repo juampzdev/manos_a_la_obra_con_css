@@ -1,6 +1,6 @@
 <?php
-// Perfil del profesional (antes era registro.html).
-// Completa (o edita) los datos del perfil en la fila del profesional.
+// Perfil del profesional: la primera vez lo completa ("Postular servicio")
+// y después lo puede editar. Guarda los datos en SU fila de la tabla profesionales.
 session_start();
 require "config.php";
 
@@ -31,6 +31,15 @@ while ($fila = $resultado_barrios->fetch_assoc()) {
     $barrios[$fila["id"]] = $fila;
 }
 
+// Revisa que una fecha tenga el formato AAAA-MM-DD y que exista de verdad
+// (por ejemplo, rechaza "2024-02-31" o un texto cualquiera).
+// createFromFormat arma la fecha a partir del texto; si al volver a escribirla
+// no da exactamente lo mismo, es que el texto no era una fecha válida.
+function fecha_valida($fecha) {
+    $fecha_armada = DateTime::createFromFormat("Y-m-d", $fecha);
+    return $fecha_armada && $fecha_armada->format("Y-m-d") === $fecha;
+}
+
 // ---------- Guardar el formulario ----------
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $oficio      = $_POST["profesion"] ?? "";
@@ -53,6 +62,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $error = "Elegí tu barrio de la lista.";
     } elseif (mb_strlen($descripcion) > 300) {
         $error = "La descripción no puede pasar los 300 caracteres.";
+    } elseif (mb_strlen($ciudad) > 100 || mb_strlen($domicilio) > 120 || mb_strlen($telefono) > 30) {
+        // Los mismos largos que las columnas de la base: si no, MySQL daría error
+        $error = "La ciudad, el domicilio o el teléfono son demasiado largos.";
+    } elseif (!fecha_valida($fecha_alta) || ($fecha_baja !== null && !fecha_valida($fecha_baja))) {
+        $error = "Revisá las fechas: alguna no es válida.";
+    } elseif ($fecha_alta > date("Y-m-d")) {
+        // Las fechas AAAA-MM-DD se pueden comparar como texto: "2030-01-01" > "2026-10-28"
+        $error = "La fecha de alta no puede ser futura.";
     } elseif ($experiencia < 0 || $experiencia > 60) {
         $error = "Los años de experiencia tienen que estar entre 0 y 60.";
     } elseif ($fecha_baja !== null && $fecha_baja < $fecha_alta) {
@@ -129,7 +146,8 @@ $barrio_actual = $error !== null ? (int) ($_POST["barrio"] ?? 0) : (int) ($perfi
         <div class="fila">
             <label for="fecha_alta">Fecha de alta
                 <span class="ayuda">Cuándo empezaste a ejercer.</span>
-                <input type="date" id="fecha_alta" name="fecha_alta" value="<?php echo valor("fecha_alta", "fecha_alta"); ?>" required>
+                <!-- max = hoy: el calendario no deja elegir una fecha futura -->
+                <input type="date" id="fecha_alta" name="fecha_alta" max="<?php echo date("Y-m-d"); ?>" value="<?php echo valor("fecha_alta", "fecha_alta"); ?>" required>
             </label>
             <label for="fecha_baja">Fecha de baja (opcional)
                 <span class="ayuda">Dejala vacía si seguís en actividad.</span>
@@ -145,7 +163,7 @@ $barrio_actual = $error !== null ? (int) ($_POST["barrio"] ?? 0) : (int) ($perfi
 
         <div class="fila">
             <label for="ciudad">Ciudad
-                <input type="text" id="ciudad" name="ciudad" autocomplete="address-level2" value="<?php echo valor("ciudad", "ubicacion"); ?>" required>
+                <input type="text" id="ciudad" name="ciudad" maxlength="100" autocomplete="address-level2" value="<?php echo valor("ciudad", "ubicacion"); ?>" required>
             </label>
             <label for="experiencia">Años de experiencia
                 <input type="number" id="experiencia" name="experiencia" min="0" max="60" inputmode="numeric" value="<?php echo valor("experiencia", "experiencia"); ?>" required>
@@ -171,7 +189,7 @@ $barrio_actual = $error !== null ? (int) ($_POST["barrio"] ?? 0) : (int) ($perfi
         </div>
 
         <label for="telefono">Teléfono de contacto
-            <input type="tel" id="telefono" name="telefono" autocomplete="tel" value="<?php echo valor("telefono", "telefono"); ?>" required>
+            <input type="tel" id="telefono" name="telefono" maxlength="30" autocomplete="tel" value="<?php echo valor("telefono", "telefono"); ?>" required>
         </label>
 
         <button type="submit">Guardar perfil</button>

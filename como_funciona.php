@@ -168,7 +168,7 @@ $es_destacado    = $mi_perfil && $mi_perfil["destacado_hasta"] !== null && $mi_p
                     <?php else: ?>
                         <div>
                             <span class="estado-numero">⭐ <?php echo $mi_perfil["valoracion"]; ?></span>
-                            <span class="texto-suave"><?php echo $mi_perfil["cantidad_resenas"]; ?> reseñas · Tu perfil está publicado</span>
+                            <span class="texto-suave"><?php echo $mi_perfil["cantidad_resenas"] . ($mi_perfil["cantidad_resenas"] == 1 ? " reseña" : " reseñas"); ?> · Tu perfil está publicado</span>
                         </div>
                         <a href="perfil.php?id=<?php echo $_SESSION["usuario_id"]; ?>" class="boton boton-lleno">Ver mi perfil público</a>
                     <?php endif; ?>

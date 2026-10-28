@@ -1,4 +1,14 @@
 <?php
+// Página de inicio. De arriba hacia abajo tiene:
+//   1. Encabezado: logo, buscador, botones de cuenta y menú.
+//   2. Aviso "Completá tu perfil" (solo para profesionales sin perfil).
+//   3. Portada (hero) con los botones principales.
+//   4. Oficios más buscados: cada tarjeta filtra por su oficio.
+//   5. Profesionales cerca: el visitante elige su barrio.
+//   6. Profesionales destacados (o los resultados de la búsqueda / del filtro).
+//   7. Pie de página.
+// Primero, en PHP, se buscan todos los datos; después viene el HTML que los muestra.
+
 // session_start() tiene que ir SIEMPRE antes de imprimir cualquier HTML,
 // es lo que nos permite leer si hay un usuario logueado ($_SESSION)
 session_start();
@@ -12,8 +22,7 @@ $modo_oscuro = ($_COOKIE["tema"] ?? "") === "oscuro";
 $buscar = trim($_GET["buscar"] ?? "");
 $oficio = trim($_GET["oficio"] ?? "");
 
-// Traemos los profesionales desde la base de datos en vez de tenerlos
-// escritos a mano en el HTML como antes
+// ---------- Profesionales (sección 6) ----------
 // Solo los que ya completaron su perfil (tienen oficio) y siguen en actividad
 // (sin fecha de baja o con baja a futuro).
 // Si hay una búsqueda o un oficio elegido, se agrega esa condición.
@@ -63,7 +72,7 @@ if ($oficio !== "") {
     $titulo_profesionales = "Profesionales destacados";
 }
 
-// ---------- Profesionales cerca ----------
+// ---------- Profesionales cerca (sección 5) ----------
 // La lista de barrios para elegir sale de la tabla barrios
 $barrios = [];
 $resultado_barrios = $conexion->query("SELECT id, barrio, zona FROM barrios ORDER BY zona, barrio");
@@ -288,12 +297,13 @@ if (($_SESSION["usuario_tipo"] ?? "") === "profesional") {
             </div>
         </div>
     </section>
-        <footer class="pie-pagina">
+
+    <footer class="pie-pagina">
         <div class="contenedor">
             <div class="pie-confianza">
                 <h2>Profesionales en los que podés confiar</h2>
                 <ul>
-                    <li>✓ Perfiles verificados</li>
+                    <li>✓ Profesionales de tu zona</li>
                     <li>✓ Opiniones de clientes</li>
                     <li>✓ Ubicación y datos del profesional</li>
                     <li>✓ Contacto directo</li>
