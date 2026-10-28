@@ -170,7 +170,7 @@ if (($_SESSION["usuario_tipo"] ?? "") === "profesional") {
             <a href="#cerca">Cerca de vos</a>
             <a href="#profesionales">Profesionales</a>
             <a href="#">Cómo funciona</a>
-            <a href="#">Contacto</a>
+            <a href="contacto.php">Contacto</a>
         </nav>
     </header>
 
@@ -296,7 +296,7 @@ if (($_SESSION["usuario_tipo"] ?? "") === "profesional") {
             </div>
             <div class="pie-ayuda">
                 <p>¿Tenés dudas?</p>
-                <a href="#" class="boton boton-lleno">Consultanos</a>
+                <a href="contacto.php" class="boton boton-lleno">Consultanos</a>
             </div>
         </div>
     </footer>

@@ -484,6 +484,32 @@ a.link-ingresar:hover { color: var(--primario); }
 .formulario .fila { display: flex; gap: 16px; }
 .formulario .fila > label { flex: 1 1 0; min-width: 0; }   /* las dos columnas del mismo ancho */
 
+/* Contacto: el mensaje puede ser largo, así que la caja arranca más alta */
+.formulario textarea.mensaje-largo { min-height: 180px; }
+
+/* Campo para elegir imágenes: borde punteado, como una zona para "soltar" archivos */
+.formulario input[type="file"] {
+    border-style: dashed;
+    padding: 14px;
+    cursor: pointer;
+}
+/* ::file-selector-button es el botón "Elegir archivos" que dibuja el navegador */
+.formulario input[type="file"]::file-selector-button {
+    margin-right: 12px;
+    padding: 7px 14px;
+    border: 2px solid var(--primario);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--primario);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+.formulario input[type="file"]::file-selector-button:hover {
+    background: var(--primario);
+    color: var(--blanco);
+}
+
 .formulario .ayuda,
 .formulario .contador { font-weight: 400; font-size: 0.8rem; color: var(--texto-suave); }
 .formulario .contador { align-self: flex-end; }

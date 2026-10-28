@@ -29,6 +29,7 @@ Proyecto de la materia **Práctica Profesionalizante** (Analista Funcional en Si
 | `login.php` | Formulario para ingresar. Busca la cuenta en las dos tablas. |
 | `logout.php` | No se ve. Cierra la sesión. |
 | `postular.php` | El profesional completa o edita su perfil. |
+| `contacto.php` | Formulario de contacto. Manda el mensaje y hasta 3 imágenes por mail a iseiclaude@gmail.com. |
 | `config.php` | Datos de conexión a la base. Lo incluyen todas las páginas. |
 | `style.css` | Todos los estilos del sitio. |
 | `database.sql` | Crea la base con las tablas `clientes`, `profesionales`, `resenas` y `barrios`, y carga datos de ejemplo. |
@@ -57,6 +58,41 @@ Proyecto de la materia **Práctica Profesionalizante** (Analista Funcional en Si
 > ⚠️ `database.sql` borra las tablas si ya existían: al volver a ejecutarlo se pierden las cuentas
 > creadas y quedan solo las de ejemplo.
 
+## Envío de mails (formulario de contacto)
+
+`contacto.php` usa la función `mail()` de PHP. XAMPP no manda mails si no se le configura una
+cuenta, así que hay que hacerlo **una vez en cada computadora** donde se quiera probar el envío.
+Se usa la propia cuenta de Gmail del equipo para mandar.
+
+1. **Crear una contraseña de aplicación en Gmail.** Entrar a la cuenta `iseiclaude@gmail.com`,
+   activar la **verificación en 2 pasos** y después ir a https://myaccount.google.com/apppasswords.
+   Crear una con cualquier nombre (por ejemplo "XAMPP"). Gmail muestra una clave de 16 letras:
+   copiarla. **No es la contraseña normal de Gmail** y no hay que subirla a GitHub.
+2. **Configurar sendmail.** Abrir `C:\xampp\sendmail\sendmail.ini` con el Bloc de notas y dejar
+   estas líneas así (las demás no se tocan):
+   ```ini
+   smtp_server=smtp.gmail.com
+   smtp_port=587
+   smtp_ssl=tls
+   auth_username=iseiclaude@gmail.com
+   auth_password=LA_CLAVE_DE_16_LETRAS
+   force_sender=iseiclaude@gmail.com
+   ```
+3. **Configurar PHP.** En el panel de XAMPP, botón **Config** de Apache → **PHP (php.ini)**.
+   Buscar la sección `[mail function]` y dejarla así:
+   ```ini
+   SMTP=smtp.gmail.com
+   smtp_port=587
+   sendmail_from=iseiclaude@gmail.com
+   sendmail_path = "\"C:\xampp\sendmail\sendmail.exe\" -t"
+   ```
+   Si alguna línea empieza con `;`, borrar el `;` (con `;` adelante la línea no se tiene en cuenta).
+4. **Reiniciar Apache** en XAMPP (Stop y Start).
+5. Entrar a `contacto.php`, mandar un mensaje de prueba y revisar la bandeja de `iseiclaude@gmail.com`.
+
+Si la página dice "No pudimos enviar el mensaje", el detalle del problema queda en
+`C:\xampp\sendmail\error.log`. Lo más común es una contraseña de aplicación mal copiada.
+
 ## Cuentas de ejemplo
 
 Todas tienen la contraseña **123456**.
@@ -76,6 +112,7 @@ Todas tienen la contraseña **123456**.
 | Lo que aparece | Qué revisar |
 |---|---|
 | `Unknown database 'manos_a_la_obra'` | No se ejecutó `database.sql`. |
+| "No pudimos enviar el mensaje" en Contacto | Falta configurar el envío de mails (ver arriba) o la contraseña de aplicación está mal. Mirar `C:\xampp\sendmail\error.log`. |
 | `Table ... doesn't exist` o `bind_param() on bool` | El script se ejecutó a medias o es una versión vieja. Volver a ejecutarlo con Shift+F9. |
 | Se ve el código PHP | Se abrió con doble clic. Entrar por `http://localhost/...`. |
 | La página no carga | Apache o MySQL apagados en XAMPP. |
