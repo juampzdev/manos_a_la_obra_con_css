@@ -34,6 +34,7 @@ Proyecto de la materia **Práctica Profesionalizante** (Analista Funcional en Si
 | `config.php` | Datos de conexión a la base. Lo incluyen todas las páginas. |
 | `style.css` | Todos los estilos del sitio. |
 | `database.sql` | Crea la base con las tablas `clientes`, `profesionales`, `resenas` y `barrios`, y carga datos de ejemplo. |
+| `Manos_a_la_Obra_Documentacion_Final.pdf` | Documentación para estudiar y defender el proyecto: HTML, CSS, base de datos, conexión PHP, relevamiento, puesta en marcha y preguntas de la defensa. |
 
 ## Base de datos
 
