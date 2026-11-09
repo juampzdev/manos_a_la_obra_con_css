@@ -78,9 +78,10 @@ if ($oficio !== "") {
 }
 
 // ---------- Profesionales cerca (sección 5) ----------
-// La lista de barrios para elegir sale de la tabla barrios
+// La lista de barrios para elegir sale de la tabla barrios.
+// ORDER BY barrio los trae en orden alfabético, así el visitante encuentra el suyo más rápido.
 $barrios = [];
-$resultado_barrios = $conexion->query("SELECT id, barrio, zona FROM barrios ORDER BY zona, barrio");
+$resultado_barrios = $conexion->query("SELECT id, barrio, zona FROM barrios ORDER BY barrio");
 while ($fila = $resultado_barrios->fetch_assoc()) {
     $barrios[$fila["id"]] = $fila;
 }

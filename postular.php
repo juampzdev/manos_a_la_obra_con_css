@@ -25,8 +25,9 @@ $error = null;
 
 // Los barrios para la lista desplegable salen de la tabla barrios.
 // Armamos un array id => fila, así después es fácil revisar si el barrio elegido existe.
+// ORDER BY barrio los trae en orden alfabético (la zona igual se ve al lado de cada uno).
 $barrios = [];
-$resultado_barrios = $conexion->query("SELECT id, barrio, zona FROM barrios ORDER BY zona, barrio");
+$resultado_barrios = $conexion->query("SELECT id, barrio, zona FROM barrios ORDER BY barrio");
 while ($fila = $resultado_barrios->fetch_assoc()) {
     $barrios[$fila["id"]] = $fila;
 }
