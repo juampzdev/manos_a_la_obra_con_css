@@ -121,14 +121,18 @@ INSERT INTO profesionales (nombre, apellido, email, password, iniciales, oficio,
 
 INSERT INTO clientes (nombre, apellido, email, password) VALUES
 ('Lucía', 'Fernández', 'lucia@ejemplo.com', '$2y$10$ioq8MZwfjHbqKlICL2TU7.Kb122ljeebjRXsbXTO5Z1s.r0jHowrq'),
-('Martín', 'Sosa',     'martin@ejemplo.com', '$2y$10$ioq8MZwfjHbqKlICL2TU7.Kb122ljeebjRXsbXTO5Z1s.r0jHowrq');
+('Martín', 'Sosa',     'martin@ejemplo.com', '$2y$10$ioq8MZwfjHbqKlICL2TU7.Kb122ljeebjRXsbXTO5Z1s.r0jHowrq'),
+('Sofía',  'Romero',   'sofia@ejemplo.com',  '$2y$10$ioq8MZwfjHbqKlICL2TU7.Kb122ljeebjRXsbXTO5Z1s.r0jHowrq');
 
 -- profesional_id y cliente_id son los id de las filas de arriba (Juan = 1, Lucía = 1, etc.)
 INSERT INTO resenas (profesional_id, cliente_id, puntaje, comentario) VALUES
 (1, 1, 5, 'Vino en el día y me dejó el tablero funcionando. Muy prolijo.'),
 (1, 2, 4, 'Buen trabajo, llegó un poco tarde pero avisó.'),
 (2, 1, 5, 'Pintó todo el living en dos días y dejó todo limpio.'),
-(3, 2, 4, 'Solucionó la pérdida del baño rápido y a buen precio.');
+(3, 2, 4, 'Solucionó la pérdida del baño rápido y a buen precio.'),
+-- Con esta tercera reseña Juan llega a 3 reseñas y promedio 4.7:
+-- así se ve la insignia "Mejor valorado" (promedio 4.5 o más y al menos 3 reseñas)
+(1, 3, 5, 'Excelente, me explicó todo lo que hizo. Lo vuelvo a llamar.');
 
 -- Carlos tiene el plan Destacado por un mes desde hoy, para ver cómo funciona.
 -- DATE_ADD(CURDATE(), INTERVAL 1 MONTH) = la fecha de hoy más un mes

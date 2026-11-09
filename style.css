@@ -13,7 +13,7 @@
      7.  Portada (hero)
      8.  Secciones y tarjetas de oficios
      9.  Profesionales cerca
-     10. Plan Destacado
+     10. Plan Destacado e insignia "Mejor valorado"
      11. Tarjetas de profesionales
      12. Pie de página
      13. Perfil del profesional (perfil.php)
@@ -38,6 +38,8 @@
     --borde-campo: #d1d5db;     /* borde de los campos de los formularios */
     --hero-fin: #ffe0cc;        /* segundo color del degradado de la portada */
     --oscuro: #1e293b;          /* azul oscuro del pie de página */
+    --verde: #15803d;           /* insignia "Mejor valorado" */
+    --verde-suave: #dcfce7;     /* fondo verde muy clarito de esa insignia */
     --radio: 12px;              /* qué tan redondeadas son las esquinas */
     --sombra: 0 2px 10px rgba(0, 0, 0, 0.06);
 }
@@ -56,6 +58,8 @@ body.oscuro {
     --borde-campo: #4b5563;
     --hero-fin: #111827;
     --oscuro: #0b1120;
+    --verde: #86efac;           /* verde claro, para que se lea sobre fondo oscuro */
+    --verde-suave: #14301f;
     --sombra: 0 2px 10px rgba(0, 0, 0, 0.4);
     color-scheme: dark;         /* el navegador también oscurece calendarios, listas y barras */
 }
@@ -340,6 +344,19 @@ a.link-ingresar:hover { color: var(--primario); }
     font-size: 0.75rem;
     font-weight: 700;
     padding: 2px 10px;
+    border-radius: 20px;
+    margin-bottom: 6px;
+}
+/* Insignia "Mejor valorado": misma forma que la de Destacado pero en verde,
+   para que se note que es otra cosa (se gana con reseñas, no se paga) */
+.insignia-mejor-valorado {
+    display: inline-block;
+    background: var(--verde-suave);
+    color: var(--verde);
+    border: 1px solid var(--verde);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 1px 10px;
     border-radius: 20px;
     margin-bottom: 6px;
 }

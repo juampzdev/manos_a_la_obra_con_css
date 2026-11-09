@@ -47,6 +47,23 @@ Proyecto de la materia **Práctica Profesionalizante** (Analista Funcional en Si
   Un cliente puede dejar una sola reseña por profesional. Cada vez que se agrega una,
   se recalculan `valoracion` y `cantidad_resenas` en la tabla `profesionales`.
 
+## Insignia "🏆 Mejor valorado"
+
+Es distinta del plan Destacado: **no se paga**, se gana con las reseñas de los clientes.
+La tiene el profesional con **promedio de 4.5 o más** y **al menos 3 reseñas**
+(con una sola reseña de 5 no alcanza).
+
+No se guarda en ninguna columna: cada consulta la calcula en el momento, así que si el promedio
+baja la insignia se pierde sola. En el inicio el orden es: primero los del plan Destacado,
+después los "Mejor valorado" y al final el resto, de mayor a menor valoración.
+Se ve en la tarjeta (`tarjeta_profesional.php`) y en el perfil (`perfil.php`).
+
+```sql
+(valoracion >= 4.5 AND cantidad_resenas >= 3) AS mejor_valorado
+```
+
+En los datos de ejemplo, **Juan** la tiene (3 reseñas, promedio 4.7).
+
 ## Puesta en marcha
 
 1. Copiar la carpeta en `C:\xampp\htdocs\manos_a_la_obra_con_css\`.
@@ -134,6 +151,7 @@ Todas tienen la contraseña **123456**.
 | Profesional | `diego@ejemplo.com` (Carpintero, Arroyito) |
 | Cliente | `lucia@ejemplo.com` |
 | Cliente | `martin@ejemplo.com` |
+| Cliente | `sofia@ejemplo.com` |
 
 ## Errores comunes
 

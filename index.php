@@ -30,8 +30,12 @@ $oficio = trim($_GET["oficio"] ?? "");
 // afuera a los profesionales que todavía no eligieron barrio (barrio_id vacío).
 // La columna "destacado" la armamos en la consulta: vale 1 si tiene el plan Destacado
 // vigente (fecha de hoy o futura) y 0 si no lo tiene o ya venció.
+// La columna "mejor_valorado" también la armamos acá: vale 1 si tiene promedio de 4.5 o más
+// Y al menos 3 reseñas. Pedimos 3 reseñas para que no alcance con una sola de 5 estrellas.
+// A diferencia del plan Destacado, esto no se paga: se gana con las reseñas de los clientes.
 $sql = "SELECT profesionales.*, barrios.barrio,
-               (destacado_hasta IS NOT NULL AND destacado_hasta >= CURDATE()) AS destacado
+               (destacado_hasta IS NOT NULL AND destacado_hasta >= CURDATE()) AS destacado,
+               (valoracion >= 4.5 AND cantidad_resenas >= 3) AS mejor_valorado
         FROM profesionales
         LEFT JOIN barrios ON barrios.id = profesionales.barrio_id
         WHERE oficio IS NOT NULL
@@ -52,8 +56,9 @@ if ($buscar !== "") {
     $tipos .= "ssssss";
     array_push($valores, $patron, $patron, $patron, $patron, $patron, $patron);
 }
-// Primero los destacados (1 antes que 0) y después los mejor valorados
-$sql .= " ORDER BY destacado DESC, valoracion DESC, cantidad_resenas DESC";
+// Primero los del plan Destacado (1 antes que 0), después los que tienen
+// la insignia "Mejor valorado" y al final el resto, de mayor a menor valoración
+$sql .= " ORDER BY destacado DESC, mejor_valorado DESC, valoracion DESC, cantidad_resenas DESC";
 
 $consulta = $conexion->prepare($sql);
 if ($tipos !== "") {
@@ -88,16 +93,18 @@ if (isset($barrios[$barrio_elegido])) {
     // Primero van los que tienen el plan Destacado. Después,
     // (barrios.id = ?) DESC pone primero a los del mismo barrio:
     // la comparación da 1 si es el mismo barrio y 0 si no, y DESC ordena de mayor a menor.
+    // Dentro del mismo barrio, primero los "Mejor valorado" (misma regla que arriba).
     // LIMIT 6 trae como mucho seis.
     $consulta_cerca = $conexion->prepare(
         "SELECT profesionales.*, barrios.barrio,
-                (destacado_hasta IS NOT NULL AND destacado_hasta >= CURDATE()) AS destacado
+                (destacado_hasta IS NOT NULL AND destacado_hasta >= CURDATE()) AS destacado,
+                (valoracion >= 4.5 AND cantidad_resenas >= 3) AS mejor_valorado
          FROM profesionales
          JOIN barrios ON barrios.id = profesionales.barrio_id
          WHERE oficio IS NOT NULL
            AND (fecha_baja IS NULL OR fecha_baja >= CURDATE())
            AND barrios.zona = ?
-         ORDER BY destacado DESC, (barrios.id = ?) DESC, valoracion DESC
+         ORDER BY destacado DESC, (barrios.id = ?) DESC, mejor_valorado DESC, valoracion DESC
          LIMIT 6"
     );
     $zona_elegida = $barrios[$barrio_elegido]["zona"];

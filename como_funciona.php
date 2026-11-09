@@ -236,6 +236,13 @@ $es_destacado    = $mi_perfil && $mi_perfil["destacado_hasta"] !== null && $mi_p
                         Las reseñas y la valoración no se pueden comprar: las escriben solo los clientes.</p>
                 </div>
                 <div class="pregunta-frecuente">
+                    <h3>¿Qué significa "🏆 Mejor valorado"?</h3>
+                    <p>Es una insignia que no se paga: la ganan los profesionales con un promedio de
+                        <strong>4.5 estrellas o más</strong> y <strong>al menos 3 reseñas</strong>.
+                        Aparecen antes que el resto (después de los del plan Destacado).
+                        Si el promedio baja, la insignia se pierde sola.</p>
+                </div>
+                <div class="pregunta-frecuente">
                     <h3>¿Se muestra mi dirección?</h3>
                     <p>No. De los profesionales solo se muestran el barrio y la ciudad. Los clientes no publican ningún dato.</p>
                 </div>

@@ -21,6 +21,11 @@ if (!isset($profesional)) {
         <?php if (!empty($profesional["destacado"])): ?>
             <span class="insignia-destacado">⭐ Destacado</span>
         <?php endif; ?>
+        <!-- "Mejor valorado" no se paga: lo calcula la consulta del inicio
+             (promedio de 4.5 o más y al menos 3 reseñas). Puede tener las dos insignias. -->
+        <?php if (!empty($profesional["mejor_valorado"])): ?>
+            <span class="insignia-mejor-valorado">🏆 Mejor valorado</span>
+        <?php endif; ?>
         <h3><?php echo htmlspecialchars($profesional["nombre"] . " " . $profesional["apellido"]); ?></h3>
         <p class="oficio"><?php echo htmlspecialchars($profesional["oficio"]); ?></p>
         <!-- "1 reseña" en singular y "2 reseñas" en plural -->

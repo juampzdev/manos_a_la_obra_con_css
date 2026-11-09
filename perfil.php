@@ -23,7 +23,8 @@ $error = null;
 // hay que aclarar de cuál hablamos: profesionales.id
 $consulta = $conexion->prepare(
     "SELECT profesionales.*, barrios.barrio,
-            (destacado_hasta IS NOT NULL AND destacado_hasta >= CURDATE()) AS destacado
+            (destacado_hasta IS NOT NULL AND destacado_hasta >= CURDATE()) AS destacado,
+            (valoracion >= 4.5 AND cantidad_resenas >= 3) AS mejor_valorado
      FROM profesionales
      LEFT JOIN barrios ON barrios.id = profesionales.barrio_id
      WHERE profesionales.id = ?
@@ -158,6 +159,10 @@ function estrellas($puntaje) {
                     <div class="profesional-info">
                         <?php if ($profesional["destacado"]): ?>
                             <span class="insignia-destacado">⭐ Destacado</span>
+                        <?php endif; ?>
+                        <!-- Se gana con las reseñas: promedio de 4.5 o más y al menos 3 reseñas -->
+                        <?php if ($profesional["mejor_valorado"]): ?>
+                            <span class="insignia-mejor-valorado">🏆 Mejor valorado</span>
                         <?php endif; ?>
                         <h1><?php echo htmlspecialchars($profesional["nombre"] . " " . $profesional["apellido"]); ?></h1>
                         <p class="oficio"><?php echo htmlspecialchars($profesional["oficio"]); ?></p>
