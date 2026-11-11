@@ -26,7 +26,7 @@ Proyecto de la materia **Práctica Profesionalizante** (Analista Funcional en Si
 | `tema.php` | No se ve. Cambia entre modo claro y oscuro y guarda la elección en una cookie. |
 | `registro.php` | Formulario para crear una cuenta (cliente o profesional). |
 | `guardar.php` | No se ve. Guarda la cuenta en la tabla `clientes` o `profesionales`. |
-| `correo_bienvenida.php` | No se abre solo. Tiene la función `enviar_bienvenida()`, que `guardar.php` usa para mandar el mail de bienvenida (distinto para cliente y profesional). |
+| `correos.php` | No se abre solo. Los mails que manda el sitio: `enviar_bienvenida()` (la usa `guardar.php` al crear una cuenta) y `enviar_respuesta()` (la usa `bandeja.php` al responder un mensaje). |
 | `login.php` | Formulario para ingresar. Busca la cuenta en las dos tablas. |
 | `logout.php` | No se ve. Cierra la sesión. |
 | `postular.php` | El profesional completa o edita su perfil. |
@@ -55,6 +55,7 @@ Proyecto de la materia **Práctica Profesionalizante** (Analista Funcional en Si
 - **mensajes**: lo que se manda desde Contacto. `tipo_remitente` dice si lo mandó un
   `cliente`, un `profesional` o un `visitante` (sin cuenta), y así se separan en la bandeja.
 - **mensaje_imagenes**: las imágenes de cada mensaje (el archivo queda en la carpeta `adjuntos/`).
+- **respuestas**: lo que el equipo le contestó a cada mensaje desde la bandeja, y si el mail salió (`enviada`).
 
 ## Insignia "🏆 Mejor valorado"
 
@@ -119,7 +120,7 @@ Este crea `profesional_oficios` y copia allí los oficios actuales sin borrar la
 
 ## Envío de mails (formulario de contacto)
 
-`contacto.php` y el mail de bienvenida (`correo_bienvenida.php`) usan la función `mail()` de PHP. XAMPP no manda mails si no se le configura una
+`contacto.php` y los mails de `correos.php` (bienvenida y respuestas de la bandeja) usan la función `mail()` de PHP. XAMPP no manda mails si no se le configura una
 cuenta, así que hay que hacerlo **una vez en cada computadora** donde se quiera probar el envío.
 Se usa la propia cuenta de Gmail del equipo para mandar.
 
@@ -164,12 +165,16 @@ en la **Bandeja de entrada** (`bandeja.php`), aunque el mail no esté configurad
 - Mientras esa sesión está abierta, el menú muestra la pestaña **📥 Bandeja de entrada**.
 - Los mensajes se separan en tres pestañas: **Clientes**, **Profesionales** y **Sin cuenta**.
   Si la persona escribe sin haber ingresado pero su email es de una cuenta, igual va a la pestaña que le corresponde.
-- Cada mensaje se abre al tocarlo y se puede **responder** (abre el programa de mail),
-  **marcar como leído / no leído** o **borrar** (pide confirmar). Los sin leer aparecen primero, con borde naranja.
+- Cada mensaje se abre al tocarlo y se puede **responder**, **marcar como leído / no leído** o **borrar**
+  (pide confirmar). Los sin leer aparecen primero, con borde naranja.
+- **Responder**: se escribe la respuesta en la misma bandeja. Le llega por mail a quien escribió
+  (con su mensaje debajo) y queda guardada en el mensaje, con la marca "✓ Respondido".
+  Si el mail no está configurado en XAMPP, la respuesta igual queda guardada y se marca "⚠ El mail no salió".
 - Las imágenes adjuntas se guardan en `adjuntos/` y solo las puede ver un administrador.
 
-**Para agregar la bandeja a una base que ya tenés** (sin perder las cuentas creadas), ejecutá una vez
-`migracion_bandeja.sql`. Desde PowerShell:
+**Para agregar la bandeja a una base que ya tenés** (sin perder las cuentas creadas), ejecutá
+`migracion_bandeja.sql`. Se puede ejecutar más de una vez: si ya lo habías hecho, solo agrega lo nuevo
+(la tabla `respuestas`). Desde PowerShell:
 
 ```powershell
 & 'C:\xampp\mysql\bin\mysql.exe' -u root --default-character-set=utf8mb4 -e 'source C:/xampp/htdocs/manos_a_la_obra_con_css/migracion_bandeja.sql'

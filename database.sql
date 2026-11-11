@@ -15,6 +15,7 @@
 --    - administradores:  las cuentas que pueden ver la bandeja de entrada
 --    - mensajes:         lo que la gente manda desde Contacto
 --    - mensaje_imagenes: las imágenes adjuntas a cada mensaje
+--    - respuestas:       lo que el equipo le respondió a cada mensaje
 -- =========================================================
 
 CREATE DATABASE IF NOT EXISTS manos_a_la_obra
@@ -26,6 +27,7 @@ SET NAMES utf8mb4;   -- para que las tildes de los datos de ejemplo se guarden b
 -- Se borran en orden: primero las que apuntan a otras
 -- (resenas y profesional_oficios -> profesionales -> barrios).
 -- MySQL no deja borrar una tabla mientras otra tenga una FOREIGN KEY hacia ella.
+DROP TABLE IF EXISTS respuestas;
 DROP TABLE IF EXISTS mensaje_imagenes;
 DROP TABLE IF EXISTS mensajes;
 DROP TABLE IF EXISTS administradores;
@@ -171,6 +173,21 @@ CREATE TABLE mensaje_imagenes (
     archivo VARCHAR(60) NOT NULL,            -- nombre con el que se guardó en adjuntos/
     nombre_original VARCHAR(255) NOT NULL,   -- nombre que tenía en la computadora de quien lo mandó
     tipo VARCHAR(30) NOT NULL,               -- image/jpeg, image/png...
+    FOREIGN KEY (mensaje_id) REFERENCES mensajes(id) ON DELETE CASCADE
+);
+
+-- ---------------------------------------------------------
+-- Respuestas: lo que el equipo le contesta a un mensaje desde la bandeja.
+-- Se manda por mail a quien escribió y queda guardado acá, para saber qué se le dijo.
+-- enviada dice si el mail salió (si XAMPP no tiene el mail configurado, queda en 0).
+-- Un mensaje puede tener varias respuestas (relación uno a muchos).
+-- ---------------------------------------------------------
+CREATE TABLE respuestas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    mensaje_id INT NOT NULL,
+    texto VARCHAR(2000) NOT NULL,
+    enviada TINYINT(1) NOT NULL DEFAULT 0,   -- 1 = el mail salió, 0 = no salió
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (mensaje_id) REFERENCES mensajes(id) ON DELETE CASCADE
 );
 

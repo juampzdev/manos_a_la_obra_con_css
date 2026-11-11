@@ -3,9 +3,11 @@
 // Solo pueden entrar los administradores (tabla administradores).
 // Los mensajes se separan en tres pestañas según quién los mandó:
 //   bandeja.php?tipo=cliente  /  ?tipo=profesional  /  ?tipo=visitante (sin cuenta)
-// Cada mensaje se puede marcar como leído o no leído, responder por mail o borrar.
+// Cada mensaje se puede responder (la respuesta llega por mail a quien escribió
+// y queda guardada en la tabla respuestas), marcar como leído o no leído, o borrar.
 session_start();
 require "config.php";
+require "correos.php";   // la función enviar_respuesta()
 
 // ¿Eligió modo oscuro? Lo guarda tema.php en una cookie
 $modo_oscuro = ($_COOKIE["tema"] ?? "") === "oscuro";
@@ -30,13 +32,44 @@ $pestanias = [
 // La pestaña elegida llega por la dirección. Si no es una de la lista, mostramos Clientes
 $tipo = array_key_exists($_GET["tipo"] ?? "", $pestanias) ? $_GET["tipo"] : "cliente";
 
-// ---------- 1. Acciones: marcar como leído / no leído, o borrar ----------
+// ---------- 1. Acciones: responder, marcar como leído / no leído, o borrar ----------
 // Llegan por POST desde los botones de cada mensaje
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $id     = (int) ($_POST["id"] ?? 0);
     $accion = $_POST["accion"] ?? "";
+    $aviso  = "";   // qué cartel mostrar al volver (ver "Avisos" más abajo)
 
-    if ($accion === "leido" || $accion === "no_leido") {
+    if ($accion === "responder") {
+        $texto = trim($_POST["respuesta"] ?? "");
+
+        // Buscamos el mensaje: necesitamos el email, el nombre, el asunto y lo que escribió
+        $buscar = $conexion->prepare("SELECT nombre, email, asunto, mensaje FROM mensajes WHERE id = ?");
+        $buscar->bind_param("i", $id);
+        $buscar->execute();
+        $original = $buscar->get_result()->fetch_assoc();
+
+        if (!$original) {
+            $aviso = "no_existe";
+        } elseif ($texto === "" || mb_strlen($texto) > 2000) {
+            $aviso = "vacia";
+        } else {
+            // 1) Le mandamos la respuesta por mail (true si salió, false si no)
+            $enviada = enviar_respuesta($original["email"], $original["nombre"],
+                                        $original["asunto"], $original["mensaje"], $texto) ? 1 : 0;
+
+            // 2) La guardamos igual, salga o no el mail, así queda registro de qué se le dijo
+            $guardar = $conexion->prepare("INSERT INTO respuestas (mensaje_id, texto, enviada) VALUES (?, ?, ?)");
+            $guardar->bind_param("isi", $id, $texto, $enviada);
+            $guardar->execute();
+
+            // 3) Un mensaje respondido ya está leído
+            $marcar = $conexion->prepare("UPDATE mensajes SET leido = 1 WHERE id = ?");
+            $marcar->bind_param("i", $id);
+            $marcar->execute();
+
+            $aviso = $enviada ? "enviada" : "no_enviada";
+        }
+    } elseif ($accion === "leido" || $accion === "no_leido") {
         $leido = $accion === "leido" ? 1 : 0;
         $cambiar = $conexion->prepare("UPDATE mensajes SET leido = ? WHERE id = ?");
         $cambiar->bind_param("ii", $leido, $id);
@@ -58,10 +91,26 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $borrar->execute();
     }
 
-    // Volvemos a la misma pestaña con GET (Post/Redirect/Get: F5 no repite la acción)
-    header("Location: bandeja.php?tipo=" . $tipo);
+    // Volvemos a la misma pestaña con GET (Post/Redirect/Get: F5 no repite la acción).
+    // abierto=id deja ese mensaje abierto, y #mensaje-id hace bajar la página hasta él
+    $volver = "bandeja.php?tipo=" . $tipo;
+    if ($aviso !== "") {
+        $volver .= "&aviso=" . $aviso . "&abierto=" . $id . "#mensaje-" . $id;
+    }
+    header("Location: " . $volver);
     exit;
 }
+
+// ---------- Avisos ----------
+// Después de responder, la página vuelve con ?aviso=... y mostramos el cartel que corresponde
+$avisos = [
+    "enviada"    => ["ok",    "¡Listo! La respuesta se mandó por mail y quedó guardada en el mensaje."],
+    "no_enviada" => ["error", "La respuesta quedó guardada, pero el mail no salió: falta configurar el envío de mails en XAMPP (ver README.md)."],
+    "vacia"      => ["error", "Escribí la respuesta antes de enviarla (hasta 2000 caracteres)."],
+    "no_existe"  => ["error", "Ese mensaje ya no existe."],
+];
+$aviso   = $avisos[$_GET["aviso"] ?? ""] ?? null;
+$abierto = (int) ($_GET["abierto"] ?? 0);   // el mensaje que tiene que quedar abierto
 
 // ---------- 2. Cuántos mensajes hay en cada pestaña ----------
 // GROUP BY junta las filas por tipo_remitente: una fila por pestaña.
@@ -98,6 +147,21 @@ $consulta->bind_param("s", $tipo);
 $consulta->execute();
 foreach ($consulta->get_result()->fetch_all(MYSQLI_ASSOC) as $imagen) {
     $imagenes_por_mensaje[$imagen["mensaje_id"]][] = $imagen;
+}
+
+// Las respuestas que ya se mandaron, igual que las imágenes: agrupadas por mensaje
+$respuestas_por_mensaje = [];
+$consulta = $conexion->prepare(
+    "SELECT respuestas.*
+     FROM respuestas
+     JOIN mensajes ON mensajes.id = respuestas.mensaje_id
+     WHERE mensajes.tipo_remitente = ?
+     ORDER BY respuestas.creado_en, respuestas.id"
+);
+$consulta->bind_param("s", $tipo);
+$consulta->execute();
+foreach ($consulta->get_result()->fetch_all(MYSQLI_ASSOC) as $respuesta) {
+    $respuestas_por_mensaje[$respuesta["mensaje_id"]][] = $respuesta;
 }
 ?>
 <!DOCTYPE html>
@@ -137,6 +201,10 @@ foreach ($consulta->get_result()->fetch_all(MYSQLI_ASSOC) as $imagen) {
             <h1 class="como-titulo">📥 Bandeja de entrada</h1>
             <p class="como-intro">Los mensajes que llegan desde Contacto, separados según quién los mandó.</p>
 
+            <?php if ($aviso): ?>
+                <p class="mensaje-<?php echo $aviso[0]; ?> aviso-bandeja"><?php echo $aviso[1]; ?></p>
+            <?php endif; ?>
+
             <!-- Pestañas: son links a la misma página con otro ?tipo= -->
             <nav class="pestanias">
                 <?php foreach ($pestanias as $valor => $texto): ?>
@@ -162,10 +230,15 @@ foreach ($consulta->get_result()->fetch_all(MYSQLI_ASSOC) as $imagen) {
             <?php foreach ($mensajes as $m): ?>
                 <!-- <details> se abre y se cierra al tocar el <summary>, sin JavaScript.
                      Los mensajes sin leer llevan la clase "sin-leer" (borde naranja) -->
-                <details class="mensaje-bandeja <?php echo $m["leido"] ? "" : "sin-leer"; ?>">
+                <!-- id="mensaje-3": para volver justo a este mensaje después de responder.
+                     open: el atributo que deja abierto un <details> -->
+                <details id="mensaje-<?php echo $m["id"]; ?>"
+                         class="mensaje-bandeja <?php echo $m["leido"] ? "" : "sin-leer"; ?>"
+                         <?php echo $abierto === (int) $m["id"] ? "open" : ""; ?>>
                     <summary>
                         <span class="mensaje-de">
                             <?php if (!$m["leido"]): ?><span class="insignia-destacado">Nuevo</span><?php endif; ?>
+                            <?php if (!empty($respuestas_por_mensaje[$m["id"]])): ?><span class="insignia-respondido">✓ Respondido</span><?php endif; ?>
                             <strong><?php echo htmlspecialchars($m["nombre"]); ?></strong>
                             · <?php echo htmlspecialchars($m["asunto"]); ?>
                         </span>
@@ -195,11 +268,37 @@ foreach ($consulta->get_result()->fetch_all(MYSQLI_ASSOC) as $imagen) {
                             </div>
                         <?php endif; ?>
 
+                        <!-- Respuestas que ya se le mandaron a este mensaje -->
+                        <?php foreach ($respuestas_por_mensaje[$m["id"]] ?? [] as $r): ?>
+                            <div class="respuesta-enviada">
+                                <p class="respuesta-encabezado">
+                                    <strong>Respuesta del equipo</strong> · <?php echo date("d/m/Y H:i", strtotime($r["creado_en"])); ?> ·
+                                    <?php if ($r["enviada"]): ?>
+                                        <span class="respuesta-ok">✓ Enviada por mail</span>
+                                    <?php else: ?>
+                                        <span class="respuesta-error">⚠ El mail no salió</span>
+                                    <?php endif; ?>
+                                </p>
+                                <p><?php echo nl2br(htmlspecialchars($r["texto"])); ?></p>
+                            </div>
+                        <?php endforeach; ?>
+
                         <div class="mensaje-acciones">
-                            <!-- mailto: abre el programa de mail con el destinatario y el asunto ya puestos.
-                                 rawurlencode arma bien el asunto aunque tenga espacios o tildes -->
-                            <a href="mailto:<?php echo htmlspecialchars($m["email"]); ?>?subject=<?php echo rawurlencode("Re: " . $m["asunto"]); ?>"
-                               class="boton boton-lleno">Responder</a>
+                            <!-- Responder: otro <details> que al tocarlo muestra el formulario.
+                                 La respuesta le llega por mail a quien escribió (la manda enviar_respuesta()) -->
+                            <details class="responder">
+                                <summary class="boton boton-lleno">Responder</summary>
+                                <form action="bandeja.php?tipo=<?php echo $tipo; ?>" method="post" class="formulario formulario-plano">
+                                    <input type="hidden" name="id" value="<?php echo $m["id"]; ?>">
+                                    <input type="hidden" name="accion" value="responder">
+                                    <label for="respuesta-<?php echo $m["id"]; ?>">
+                                        Respuesta para <?php echo htmlspecialchars($m["nombre"]); ?>
+                                        <span class="ayuda">Le llega por mail a <?php echo htmlspecialchars($m["email"]); ?>, con su mensaje debajo.</span>
+                                        <textarea id="respuesta-<?php echo $m["id"]; ?>" name="respuesta" maxlength="2000" required></textarea>
+                                    </label>
+                                    <button type="submit">Enviar respuesta</button>
+                                </form>
+                            </details>
 
                             <form action="bandeja.php?tipo=<?php echo $tipo; ?>" method="post">
                                 <input type="hidden" name="id" value="<?php echo $m["id"]; ?>">

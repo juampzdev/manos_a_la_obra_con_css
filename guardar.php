@@ -3,7 +3,7 @@
 // Según el tipo elegido, la guarda en la tabla "clientes" o en "profesionales".
 session_start();
 require "config.php";
-require "correo_bienvenida.php";   // la función enviar_bienvenida()
+require "correos.php";   // la función enviar_bienvenida()
 
 // Si alguien entra directo a guardar.php sin mandar el formulario, lo sacamos
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {

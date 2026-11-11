@@ -1,5 +1,6 @@
--- Ejecutar una sola vez sobre manos_a_la_obra para agregar la bandeja de entrada
+-- Ejecutar sobre manos_a_la_obra para agregar la bandeja de entrada
 -- sin borrar las cuentas ni los demás datos que ya existen.
+-- Se puede ejecutar más de una vez: lo que ya existe no se toca (IF NOT EXISTS, INSERT IGNORE).
 -- (Si preferís arrancar de cero, alcanza con volver a ejecutar database.sql.)
 USE manos_a_la_obra;
 SET NAMES utf8mb4;
@@ -30,6 +31,17 @@ CREATE TABLE IF NOT EXISTS mensaje_imagenes (
     archivo VARCHAR(60) NOT NULL,
     nombre_original VARCHAR(255) NOT NULL,
     tipo VARCHAR(30) NOT NULL,
+    FOREIGN KEY (mensaje_id) REFERENCES mensajes(id) ON DELETE CASCADE
+);
+
+-- Respuestas del equipo a cada mensaje (se agregó después: si ya habías ejecutado
+-- este archivo antes, ejecutalo de nuevo y solo se crea esta tabla)
+CREATE TABLE IF NOT EXISTS respuestas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    mensaje_id INT NOT NULL,
+    texto VARCHAR(2000) NOT NULL,
+    enviada TINYINT(1) NOT NULL DEFAULT 0,   -- 1 = el mail salió, 0 = no salió
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (mensaje_id) REFERENCES mensajes(id) ON DELETE CASCADE
 );
 

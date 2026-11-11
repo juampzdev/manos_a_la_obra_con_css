@@ -826,3 +826,38 @@ body.oscuro .aviso-bienvenida { background: #14301f; color: #86efac; }
 .confirmar-borrado form { margin-top: 8px; }
 .boton-peligro { background: #dc2626; border-color: #dc2626; color: var(--blanco); }
 .boton-peligro:hover { background: #b91c1c; border-color: #b91c1c; }
+
+/* Cartel de arriba después de responder (verde si salió el mail, rojo si no) */
+.aviso-bandeja { margin-top: 18px; }
+
+/* Etiqueta verde "✓ Respondido" en la línea del mensaje */
+.insignia-respondido {
+    display: inline-block;
+    background: #16a34a;
+    color: var(--blanco);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 20px;
+    margin-right: 6px;
+}
+
+/* Cada respuesta ya mandada, con una raya naranja a la izquierda */
+.respuesta-enviada {
+    border-left: 4px solid var(--primario);
+    background: var(--primario-suave);
+    border-radius: 0 8px 8px 0;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+}
+.respuesta-enviada p { margin: 0; }
+/* Dos clases: le gana a ".respuesta-enviada p" de arriba, que pone el margen en 0 */
+.respuesta-enviada .respuesta-encabezado { font-size: 0.85rem; color: var(--texto-suave); margin-bottom: 4px; }
+.respuesta-ok    { color: #16a34a; font-weight: 600; }
+.respuesta-error { color: #dc2626; font-weight: 600; }
+
+/* El formulario para responder: al abrirlo ocupa todo el ancho, debajo de los botones */
+.responder > summary { list-style: none; }
+.responder > summary::-webkit-details-marker { display: none; }
+.responder[open] { flex: 1 1 100%; }
+.responder form { margin-top: 12px; }

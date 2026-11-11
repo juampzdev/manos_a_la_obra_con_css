@@ -28,7 +28,7 @@ Sitio que conecta clientes con trabajadores de oficios. Ver `README.md` para arc
 ## Base de datos
 
 `manos_a_la_obra` (utf8mb4), definida en `database.sql`: tablas `clientes`, `profesionales`, `profesional_oficios`, `resenas`, `barrios`,
-`administradores`, `mensajes` y `mensaje_imagenes`.
+`administradores`, `mensajes`, `mensaje_imagenes` y `respuestas`.
 Si cambiás la estructura, actualizá `database.sql` (es lo que el estudiante ejecuta en SQLyog)
 y avisale que tiene que volver a ejecutarlo.
 
