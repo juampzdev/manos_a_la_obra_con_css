@@ -162,7 +162,7 @@ en la **Bandeja de entrada** (`bandeja.php`), aunque el mail no esté configurad
 
 - Se entra por el **mismo login** que los demás, con la cuenta **iseiclaude@gmail.com** y la contraseña
   que definió el grupo (no se escribe acá porque el repositorio es público). Al ingresar va directo a la bandeja.
-- Mientras esa sesión está abierta, el menú muestra la pestaña **📥 Bandeja de entrada**.
+- Mientras esa sesión está abierta, el menú muestra la pestaña **Bandeja de entrada**.
 - Los mensajes se separan en tres pestañas: **Clientes**, **Profesionales** y **Sin cuenta**.
   Si la persona escribe sin haber ingresado pero su email es de una cuenta, igual va a la pestaña que le corresponde.
 - Cada mensaje se abre al tocarlo y se puede **responder**, **marcar como leído / no leído** o **borrar**

@@ -192,13 +192,13 @@ foreach ($consulta->get_result()->fetch_all(MYSQLI_ASSOC) as $respuesta) {
             <a href="index.php">Inicio</a>
             <a href="como_funciona.php">Cómo funciona</a>
             <a href="contacto.php">Contacto</a>
-            <a href="bandeja.php" class="activo">📥 Bandeja de entrada</a>
+            <a href="bandeja.php" class="activo">Bandeja de entrada</a>
         </nav>
     </header>
 
     <main class="seccion">
         <div class="contenedor contenedor-bandeja">
-            <h1 class="como-titulo">📥 Bandeja de entrada</h1>
+            <h1 class="como-titulo">Bandeja de entrada</h1>
             <p class="como-intro">Los mensajes que llegan desde Contacto, separados según quién los mandó.</p>
 
             <?php if ($aviso): ?>

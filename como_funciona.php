@@ -80,7 +80,7 @@ $es_destacado    = $mi_perfil && $mi_perfil["destacado_hasta"] !== null && $mi_p
             <a href="contacto.php">Contacto</a>
             <?php if (($_SESSION["usuario_tipo"] ?? "") === "admin"): ?>
                 <!-- Solo el administrador ve esta pestaña -->
-                <a href="bandeja.php">📥 Bandeja de entrada</a>
+                <a href="bandeja.php">Bandeja de entrada</a>
             <?php endif; ?>
         </nav>
     </header>
