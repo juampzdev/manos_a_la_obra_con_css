@@ -46,7 +46,7 @@ $es_destacado    = $mi_perfil && $mi_perfil["destacado_hasta"] !== null && $mi_p
     <title>Cómo funciona | Manos a la Obra</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="<?php echo $modo_oscuro ? "oscuro" : ""; ?>">
+<body id="arriba" class="<?php echo $modo_oscuro ? "oscuro" : ""; ?>">
 
     <header class="header-principal">
         <div class="barra-superior">
@@ -258,6 +258,10 @@ $es_destacado    = $mi_perfil && $mi_perfil["destacado_hasta"] !== null && $mi_p
 
         </div>
     </main>
+
+    <!-- Botón para volver arriba. Lleva al id="arriba" del <body>.
+         Aparece recién al bajar cerca de la mitad de la página: lo hace style.css (parte 17), sin JavaScript -->
+    <a href="#arriba" class="boton-subir" aria-label="Volver arriba" title="Volver arriba">↑</a>
 
 </body>
 </html>

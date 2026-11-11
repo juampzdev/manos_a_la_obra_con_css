@@ -165,7 +165,7 @@ if (($_SESSION["usuario_tipo"] ?? "") === "profesional") {
 </head>
 
 <!-- Con modo oscuro, el body lleva la clase "oscuro" y style.css cambia los colores -->
-<body class="<?php echo $modo_oscuro ? "oscuro" : ""; ?>">
+<body id="arriba" class="<?php echo $modo_oscuro ? "oscuro" : ""; ?>">
 
     <header class="header-principal">
         <div class="barra-superior">
@@ -359,6 +359,10 @@ if (($_SESSION["usuario_tipo"] ?? "") === "profesional") {
             </div>
         </div>
     </footer>
+
+    <!-- Botón para volver arriba. Lleva al id="arriba" del <body>.
+         Aparece recién al bajar cerca de la mitad de la página: lo hace style.css (parte 17), sin JavaScript -->
+    <a href="#arriba" class="boton-subir" aria-label="Volver arriba" title="Volver arriba">↑</a>
 
 </body>
 

@@ -119,7 +119,7 @@ function estrellas($puntaje) {
     <title><?php echo $profesional ? htmlspecialchars($profesional["nombre"] . " " . $profesional["apellido"]) . " | " : ""; ?>Manos a la Obra</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="<?php echo $modo_oscuro ? "oscuro" : ""; ?>">
+<body id="arriba" class="<?php echo $modo_oscuro ? "oscuro" : ""; ?>">
 
     <header class="header-principal">
         <div class="barra-superior">
@@ -255,6 +255,10 @@ function estrellas($puntaje) {
             <?php endif; ?>
         </div>
     </main>
+
+    <!-- Botón para volver arriba. Lleva al id="arriba" del <body>.
+         Aparece recién al bajar cerca de la mitad de la página: lo hace style.css (parte 17), sin JavaScript -->
+    <a href="#arriba" class="boton-subir" aria-label="Volver arriba" title="Volver arriba">↑</a>
 
 </body>
 </html>

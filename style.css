@@ -20,6 +20,7 @@
      14. Cómo funciona (como_funciona.php)
      15. Formularios (login, registro, perfil, contacto)
      16. Celulares y pantallas chicas (@media)
+     17. Botón "Volver arriba"
    ========================================================= */
 
 /* ---------- 1. Variables de colores y medidas ----------
@@ -687,4 +688,59 @@ body.oscuro .aviso-bienvenida { background: #14301f; color: #86efac; }
     .perfil-datos { grid-template-columns: 1fr; }
     .perfil-cabecera { flex-direction: column; text-align: center; }
     .como-titulo { font-size: 1.6rem; }
+}
+
+/* =========================================================
+   17. Botón "Volver arriba" (index, perfil y cómo funciona)
+   Es un link a #arriba (el id del <body>). Queda fijo abajo a la derecha
+   y aparece recién al bajar cerca de la mitad de la página.
+   ========================================================= */
+
+/* Al tocar un link a una parte de la página (#arriba, #profesionales...)
+   baja o sube suave en vez de saltar de golpe.
+   Si la persona pidió "reducir el movimiento" en su sistema, lo respetamos */
+@media (prefers-reduced-motion: no-preference) {
+    html { scroll-behavior: smooth; }
+}
+
+.boton-subir {
+    position: fixed;            /* fijo en la pantalla aunque se haga scroll */
+    right: 20px;
+    bottom: 20px;
+    z-index: 20;                /* por encima de las tarjetas y del encabezado */
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;         /* redondo */
+    background: var(--primario);
+    color: var(--blanco);
+    font-size: 1.4rem;
+    font-weight: 700;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    transition: background 0.2s;
+}
+.boton-subir:hover { background: var(--primario-oscuro); }
+
+/* Que aparezca a la mitad de la página, sin JavaScript:
+   animation-timeline: scroll() hace que la animación no avance con el tiempo
+   sino con el scroll. animation-range: 40% 50% quiere decir que la animación
+   va del 40% al 50% de lo que se puede bajar: antes está oculto, en ese tramo
+   aparece de a poco, y después queda visible (por "both").
+   @supports: solo se aplica en los navegadores que entienden esta función
+   (Chrome y Edge). En los demás el botón se ve siempre, y funciona igual. */
+@supports (animation-timeline: scroll()) {
+    .boton-subir {
+        opacity: 0;              /* oculto mientras no se baje lo suficiente */
+        visibility: hidden;      /* oculto también para el mouse y el teclado */
+        animation: aparecer-boton linear both;
+        animation-timeline: scroll(root);
+        animation-range: 40% 50%;
+    }
+}
+@keyframes aparecer-boton {
+    from { opacity: 0; visibility: hidden; transform: translateY(20px); }
+    to   { opacity: 1; visibility: visible; transform: translateY(0); }
 }
