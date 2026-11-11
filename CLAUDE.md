@@ -20,14 +20,15 @@ Sitio que conecta clientes con trabajadores de oficios. Ver `README.md` para arc
 - Base de datos con **mysqli** y siempre **consultas preparadas** (`prepare` + `bind_param`) cuando hay datos del usuario.
 - Todo lo que se imprime y viene del usuario o de la base pasa por `htmlspecialchars()`.
 - Contraseñas con `password_hash()` / `password_verify()`.
-- Sesión: `$_SESSION["usuario_id"]` siempre va con `$_SESSION["usuario_tipo"]` (`"cliente"` o `"profesional"`),
+- Sesión: `$_SESSION["usuario_id"]` siempre va con `$_SESSION["usuario_tipo"]` (`"cliente"`, `"profesional"` o `"admin"`),
   porque cada tabla numera sus filas por separado.
 - Todos los estilos en **un solo** `style.css`, con las variables de color de `:root`
   y un bloque `@media (max-width: 760px)` para celular.
 
 ## Base de datos
 
-`manos_a_la_obra` (utf8mb4), definida en `database.sql`: tablas `clientes`, `profesionales`, `resenas` y `barrios`.
+`manos_a_la_obra` (utf8mb4), definida en `database.sql`: tablas `clientes`, `profesionales`, `profesional_oficios`, `resenas`, `barrios`,
+`administradores`, `mensajes` y `mensaje_imagenes`.
 Si cambiás la estructura, actualizá `database.sql` (es lo que el estudiante ejecuta en SQLyog)
 y avisale que tiene que volver a ejecutarlo.
 
@@ -35,3 +36,8 @@ y avisale que tiene que volver a ejecutarlo.
 
 Windows con XAMPP. La carpeta es `C:\xampp\htdocs\manos_a_la_obra_con_css\` y se entra por
 `http://localhost/manos_a_la_obra_con_css/index.php`. Trae los cambios con `git pull`.
+
+## Administración
+
+La cuenta `iseiclaude@gmail.com` (tabla `administradores`) entra a `bandeja.php`. Su contraseña
+no se escribe en ningún archivo: el repositorio es público.

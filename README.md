@@ -31,10 +31,14 @@ Proyecto de la materia **Práctica Profesionalizante** (Analista Funcional en Si
 | `logout.php` | No se ve. Cierra la sesión. |
 | `postular.php` | El profesional completa o edita su perfil. |
 | `como_funciona.php` | Explica cómo usar el sitio. Cambia según quién mira: sin cuenta, cliente (con sus reseñas dejadas) o profesional (con el estado de su perfil). |
-| `contacto.php` | Formulario de contacto. Manda el mensaje y hasta 3 imágenes por mail a iseiclaude@gmail.com. |
+| `contacto.php` | Formulario de contacto. Guarda el mensaje (y hasta 3 imágenes) en la base para la bandeja de entrada, y además avisa por mail a iseiclaude@gmail.com. |
+| `bandeja.php` | Solo administradores. Bandeja de entrada con los mensajes de Contacto, en pestañas: clientes, profesionales y sin cuenta. |
+| `imagen_mensaje.php` | No se ve. Muestra una imagen adjunta a un mensaje, solo si quien la pide es administrador. |
+| `adjuntos/` | Carpeta donde se guardan las imágenes de los mensajes. Su `.htaccess` no deja abrirlas directo desde el navegador. |
 | `config.php` | Datos de conexión a la base. Lo incluyen todas las páginas. |
 | `style.css` | Todos los estilos del sitio. |
-| `database.sql` | Crea la base con las tablas `clientes`, `profesionales`, `resenas` y `barrios`, y carga datos de ejemplo. |
+| `database.sql` | Crea la base con todas las tablas y carga datos de ejemplo. |
+| `migracion_bandeja.sql` | Agrega las tablas de la bandeja de entrada a una base que ya existe, sin borrar nada. |
 | `Manos_a_la_Obra_Documentacion_Final.pdf` | Documentación para estudiar y defender el proyecto: HTML, CSS, base de datos, conexión PHP, relevamiento, puesta en marcha y preguntas de la defensa. |
 
 ## Base de datos
@@ -47,6 +51,10 @@ Proyecto de la materia **Práctica Profesionalizante** (Analista Funcional en Si
 - **resenas**: la opinión de un cliente sobre un profesional (puntaje de 1 a 5 y comentario).
   Un cliente puede dejar una sola reseña por profesional. Cada vez que se agrega una,
   se recalculan `valoracion` y `cantidad_resenas` en la tabla `profesionales`.
+- **administradores**: las cuentas que pueden entrar a la bandeja de entrada.
+- **mensajes**: lo que se manda desde Contacto. `tipo_remitente` dice si lo mandó un
+  `cliente`, un `profesional` o un `visitante` (sin cuenta), y así se separan en la bandeja.
+- **mensaje_imagenes**: las imágenes de cada mensaje (el archivo queda en la carpeta `adjuntos/`).
 
 ## Insignia "🏆 Mejor valorado"
 
@@ -145,6 +153,29 @@ Se usa la propia cuenta de Gmail del equipo para mandar.
 
 Si la página dice "No pudimos enviar el mensaje", el detalle del problema queda en
 `C:\xampp\sendmail\error.log`. Lo más común es una contraseña de aplicación mal copiada.
+
+## Administración: bandeja de entrada
+
+Los mensajes que la gente manda desde **Contacto** quedan guardados en la base y el equipo los lee
+en la **Bandeja de entrada** (`bandeja.php`), aunque el mail no esté configurado.
+
+- Se entra por el **mismo login** que los demás, con la cuenta **iseiclaude@gmail.com** y la contraseña
+  que definió el grupo (no se escribe acá porque el repositorio es público). Al ingresar va directo a la bandeja.
+- Mientras esa sesión está abierta, el menú muestra la pestaña **📥 Bandeja de entrada**.
+- Los mensajes se separan en tres pestañas: **Clientes**, **Profesionales** y **Sin cuenta**.
+  Si la persona escribe sin haber ingresado pero su email es de una cuenta, igual va a la pestaña que le corresponde.
+- Cada mensaje se abre al tocarlo y se puede **responder** (abre el programa de mail),
+  **marcar como leído / no leído** o **borrar** (pide confirmar). Los sin leer aparecen primero, con borde naranja.
+- Las imágenes adjuntas se guardan en `adjuntos/` y solo las puede ver un administrador.
+
+**Para agregar la bandeja a una base que ya tenés** (sin perder las cuentas creadas), ejecutá una vez
+`migracion_bandeja.sql`. Desde PowerShell:
+
+```powershell
+& 'C:\xampp\mysql\bin\mysql.exe' -u root --default-character-set=utf8mb4 -e 'source C:/xampp/htdocs/manos_a_la_obra_con_css/migracion_bandeja.sql'
+```
+
+O volvé a ejecutar `database.sql`, que además carga tres mensajes de ejemplo (uno por pestaña).
 
 ## Cuentas de ejemplo
 

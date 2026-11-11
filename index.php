@@ -204,6 +204,10 @@ if (($_SESSION["usuario_tipo"] ?? "") === "profesional") {
             <a href="#profesionales">Profesionales</a>
             <a href="como_funciona.php">Cómo funciona</a>
             <a href="contacto.php">Contacto</a>
+            <?php if (($_SESSION["usuario_tipo"] ?? "") === "admin"): ?>
+                <!-- Solo el administrador ve esta pestaña -->
+                <a href="bandeja.php">📥 Bandeja de entrada</a>
+            <?php endif; ?>
         </nav>
     </header>
 
@@ -249,6 +253,8 @@ if (($_SESSION["usuario_tipo"] ?? "") === "profesional") {
                         <a href="postular.php" class="boton boton-lleno"><?php echo $falta_perfil ? "Completar mi perfil" : "Ver mi perfil"; ?></a>
                     <?php elseif ($tipo_usuario === "cliente"): ?>
                         <a href="#profesionales" class="boton boton-lleno">Buscar profesionales</a>
+                    <?php elseif ($tipo_usuario === "admin"): ?>
+                        <a href="bandeja.php" class="boton boton-lleno">📥 Ir a la bandeja de entrada</a>
                     <?php else: ?>
                         <a href="#profesionales" class="boton boton-lleno">Buscar profesionales</a>
                         <a href="registro.php" class="boton boton-borde">Publicar servicio</a>

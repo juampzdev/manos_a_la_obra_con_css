@@ -21,6 +21,7 @@
      15. Formularios (login, registro, perfil, contacto)
      16. Celulares y pantallas chicas (@media)
      17. Botón "Volver arriba"
+     18. Bandeja de entrada (bandeja.php, solo administradores)
    ========================================================= */
 
 /* ---------- 1. Variables de colores y medidas ----------
@@ -744,3 +745,84 @@ body.oscuro .aviso-bienvenida { background: #14301f; color: #86efac; }
     from { opacity: 0; visibility: hidden; transform: translateY(20px); }
     to   { opacity: 1; visibility: visible; transform: translateY(0); }
 }
+
+/* =========================================================
+   18. Bandeja de entrada (bandeja.php, solo administradores)
+   ========================================================= */
+
+/* Un poco más ancha que el perfil, para que entren las tres pestañas en una línea */
+.contenedor-bandeja { max-width: 900px; }
+
+/* Pestañas Clientes / Profesionales / Sin cuenta: links que parecen pestañas */
+.pestanias {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;              /* en celular bajan de línea */
+    margin: 22px 0 6px;
+    border-bottom: 2px solid var(--borde);
+}
+.pestania {
+    padding: 10px 16px;
+    color: var(--texto-suave);
+    text-decoration: none;
+    font-weight: 600;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;          /* la raya naranja tapa la línea gris de abajo */
+}
+.pestania:hover { color: var(--texto); }
+.pestania.activa { color: var(--primario); border-bottom-color: var(--primario); }
+.contador-nuevos {
+    background: var(--primario);
+    color: var(--blanco);
+    font-size: 0.72rem;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-left: 4px;
+}
+
+/* Cada mensaje es un <details>: se abre al tocar la línea de arriba (<summary>) */
+.mensaje-bandeja {
+    background: var(--tarjeta);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+    box-shadow: var(--sombra);
+    margin-top: 14px;
+}
+.mensaje-bandeja.sin-leer { border: 2px solid var(--primario); }
+.mensaje-bandeja > summary {
+    list-style: none;             /* saca el triangulito que el navegador pone en <summary> */
+    cursor: pointer;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.mensaje-bandeja > summary::-webkit-details-marker { display: none; }  /* el triangulito en Chrome viejo */
+.mensaje-bandeja[open] > summary { border-bottom: 1px solid var(--borde); }  /* [open] = está abierto */
+.mensaje-de .insignia-destacado { margin: 0 6px 0 0; }
+.mensaje-fecha { color: var(--texto-suave); font-size: 0.85rem; }
+
+.mensaje-cuerpo { padding: 16px 20px 20px; }
+.mensaje-cuerpo > p { margin: 0 0 12px; }
+
+/* Miniaturas de las imágenes adjuntas */
+.mensaje-imagenes { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.mensaje-imagenes img {
+    width: 120px;
+    height: 90px;
+    object-fit: cover;            /* recorta la imagen para llenar el cuadro sin deformarla */
+    border-radius: 8px;
+    border: 1px solid var(--borde);
+}
+
+/* Botones de cada mensaje, en fila */
+.mensaje-acciones { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-start; }
+.mensaje-acciones form { margin: 0; }
+.mensaje-acciones .boton { padding: 8px 16px; font: inherit; font-weight: 600; font-size: 0.9rem; }
+.confirmar-borrado > summary { list-style: none; }
+.confirmar-borrado > summary::-webkit-details-marker { display: none; }
+.confirmar-borrado form { margin-top: 8px; }
+.boton-peligro { background: #dc2626; border-color: #dc2626; color: var(--blanco); }
+.boton-peligro:hover { background: #b91c1c; border-color: #b91c1c; }

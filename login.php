@@ -18,14 +18,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $email    = trim($_POST["email"] ?? "");
     $password = $_POST["password"] ?? "";
 
-    // Buscamos el email en las dos tablas. La columna "tipo" la armamos
-    // en la consulta para saber de cuál de las dos tablas vino
+    // Buscamos el email en las tres tablas de cuentas. La columna "tipo" la armamos
+    // en la consulta para saber de cuál tabla vino.
+    // Los administradores no tienen apellido: '' AS apellido completa la columna,
+    // porque con UNION todas las consultas tienen que traer las mismas columnas.
     $consulta = $conexion->prepare(
         "SELECT id, nombre, apellido, password, 'cliente' AS tipo FROM clientes WHERE email = ?
          UNION
-         SELECT id, nombre, apellido, password, 'profesional' AS tipo FROM profesionales WHERE email = ?"
+         SELECT id, nombre, apellido, password, 'profesional' AS tipo FROM profesionales WHERE email = ?
+         UNION
+         SELECT id, nombre, '' AS apellido, password, 'admin' AS tipo FROM administradores WHERE email = ?"
     );
-    $consulta->bind_param("ss", $email, $email);
+    $consulta->bind_param("sss", $email, $email, $email);
     $consulta->execute();
     $usuario = $consulta->get_result()->fetch_assoc();
 
@@ -36,8 +40,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $_SESSION["usuario_id"]       = $usuario["id"];
         $_SESSION["usuario_nombre"]   = $usuario["nombre"];
         $_SESSION["usuario_apellido"] = $usuario["apellido"];
-        $_SESSION["usuario_tipo"]     = $usuario["tipo"];   // "cliente" o "profesional"
-        header("Location: index.php");
+        $_SESSION["usuario_tipo"]     = $usuario["tipo"];   // "cliente", "profesional" o "admin"
+        // El administrador va directo a la bandeja de entrada; los demás, al inicio
+        header("Location: " . ($usuario["tipo"] === "admin" ? "bandeja.php" : "index.php"));
         exit;
     }
 

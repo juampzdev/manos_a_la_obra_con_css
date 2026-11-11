@@ -1,8 +1,12 @@
 <?php
-// Formulario de contacto: el mensaje (con imágenes opcionales) llega por mail
-// a la casilla del equipo. Para que el mail salga de verdad, XAMPP tiene que
-// tener configurado el envío con Gmail (ver README.md, "Envío de mails").
+// Formulario de contacto. Cada mensaje (con imágenes opcionales):
+//   1. se guarda en la tabla mensajes, separado según quién escribe
+//      (cliente, profesional o alguien sin cuenta), y el equipo lo lee en bandeja.php;
+//   2. además se avisa por mail a la casilla del equipo. Para que el mail salga,
+//      XAMPP tiene que tener configurado el envío con Gmail (ver README.md).
+//      Si el mail no sale, el mensaje igual queda guardado en la bandeja.
 session_start();
+require "config.php";
 
 // ¿Eligió modo oscuro? Lo guarda tema.php en una cookie
 $modo_oscuro = ($_COOKIE["tema"] ?? "") === "oscuro";
@@ -16,6 +20,8 @@ $asuntos = ["Consulta general", "Problema con mi cuenta", "Reportar un profesion
 $max_imagenes = 3;
 $max_peso     = 2 * 1024 * 1024;   // 2 MB por imagen, en bytes
 $tipos_permitidos = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+// Con qué extensión se guarda cada tipo de imagen en la carpeta adjuntos/
+$extensiones = ["image/jpeg" => "jpg", "image/png" => "png", "image/gif" => "gif", "image/webp" => "webp"];
 
 $error = null;
 
@@ -92,8 +98,65 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
     }
 
-    // ---------- Armar y mandar el mail ----------
     if ($error === null) {
+        // ---------- 1. ¿Quién escribe? ----------
+        // Si tiene la sesión iniciada, lo sabemos por la sesión.
+        // Si no, buscamos su email entre las cuentas: puede ser un cliente o un
+        // profesional que escribió sin ingresar. Si no aparece, es alguien sin cuenta.
+        $sesion_tipo = $_SESSION["usuario_tipo"] ?? "";
+        if ($sesion_tipo === "cliente" || $sesion_tipo === "profesional") {
+            $tipo_remitente = $sesion_tipo;
+            $remitente_id   = $_SESSION["usuario_id"];
+        } else {
+            $buscar = $conexion->prepare(
+                "SELECT id, 'cliente' AS tipo FROM clientes WHERE email = ?
+                 UNION
+                 SELECT id, 'profesional' AS tipo FROM profesionales WHERE email = ?"
+            );
+            $buscar->bind_param("ss", $email, $email);
+            $buscar->execute();
+            $cuenta = $buscar->get_result()->fetch_assoc();
+            $tipo_remitente = $cuenta ? $cuenta["tipo"] : "visitante";
+            $remitente_id   = $cuenta ? $cuenta["id"] : null;   // null = sin cuenta (NULL en la base)
+        }
+
+        // ---------- 2. Guardar el mensaje en la base ----------
+        $guardar = $conexion->prepare(
+            "INSERT INTO mensajes (tipo_remitente, remitente_id, nombre, email, asunto, mensaje)
+             VALUES (?, ?, ?, ?, ?, ?)"
+        );
+        $guardar->bind_param("sissss", $tipo_remitente, $remitente_id, $nombre, $email, $asunto, $mensaje);
+        $guardar->execute();
+        $mensaje_id = $conexion->insert_id;   // el id que MySQL le dio al mensaje nuevo
+
+        // ---------- 3. Guardar las imágenes ----------
+        // Cada imagen se mueve a la carpeta adjuntos/ con un nombre nuevo al azar
+        // (bin2hex(random_bytes(8)) da 16 letras y números), así no se pisan dos
+        // archivos con el mismo nombre y nadie puede adivinar cómo se llaman.
+        // La carpeta tiene un .htaccess que no deja abrirlas desde el navegador:
+        // solo se ven desde la bandeja, con imagen_mensaje.php.
+        $carpeta = __DIR__ . "/adjuntos";   // __DIR__ = la carpeta de este archivo
+        if (!is_dir($carpeta)) {
+            mkdir($carpeta);
+        }
+        $guardar_imagen = $conexion->prepare(
+            "INSERT INTO mensaje_imagenes (mensaje_id, archivo, nombre_original, tipo) VALUES (?, ?, ?, ?)"
+        );
+        $adjuntos_guardados = [];
+        foreach ($adjuntos as $adjunto) {
+            $archivo = bin2hex(random_bytes(8)) . "." . $extensiones[$adjunto["tipo"]];
+            // move_uploaded_file saca la imagen de la carpeta temporal de PHP y la guarda en la nuestra
+            if (move_uploaded_file($adjunto["ruta"], $carpeta . "/" . $archivo)) {
+                $guardar_imagen->bind_param("isss", $mensaje_id, $archivo, $adjunto["nombre"], $adjunto["tipo"]);
+                $guardar_imagen->execute();
+                // El mail de abajo lee la imagen desde su nuevo lugar
+                $adjuntos_guardados[] = ["nombre" => $adjunto["nombre"], "tipo" => $adjunto["tipo"],
+                                         "ruta" => $carpeta . "/" . $archivo];
+            }
+        }
+        $adjuntos = $adjuntos_guardados;
+
+        // ---------- 4. Avisar por mail al equipo ----------
         // Un mail con adjuntos se arma en partes ("multipart"), separadas por un
         // texto que no aparece en ningún otro lado: el límite
         $limite = "limite_" . md5(uniqid());
@@ -127,14 +190,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         // El asunto también se codifica en base64 para que lleguen bien las tildes
         $titulo = "=?UTF-8?B?" . base64_encode("[Manos a la Obra] " . $asunto . " - " . $nombre) . "?=";
 
-        // mail() devuelve true si el mail salió. El @ evita que PHP muestre su
-        // aviso técnico en la página: en su lugar mostramos un mensaje claro
-        if (@mail($correo_destino, $titulo, $cuerpo, $cabeceras)) {
-            // Volvemos a cargar con GET, así si toca F5 no se manda dos veces
-            header("Location: contacto.php?enviado=1");
-            exit;
-        }
-        $error = "No pudimos enviar el mensaje. Probá de nuevo en unos minutos.";
+        // El @ evita que PHP muestre su aviso técnico si el mail no sale.
+        // No pasa nada si falla: el mensaje ya quedó guardado en la bandeja de entrada
+        @mail($correo_destino, $titulo, $cuerpo, $cabeceras);
+
+        // Volvemos a cargar con GET, así si toca F5 no se manda dos veces
+        header("Location: contacto.php?enviado=1");
+        exit;
     }
 }
 ?>

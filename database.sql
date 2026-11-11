@@ -11,6 +11,10 @@
 --  Además hay una tabla de apoyo:
 --    - barrios:       los barrios de Rosario agrupados por zona, para "Profesionales cerca"
 --    - profesional_oficios: los servicios de cada profesional (puede ofrecer más de uno)
+--  Y la parte de administración:
+--    - administradores:  las cuentas que pueden ver la bandeja de entrada
+--    - mensajes:         lo que la gente manda desde Contacto
+--    - mensaje_imagenes: las imágenes adjuntas a cada mensaje
 -- =========================================================
 
 CREATE DATABASE IF NOT EXISTS manos_a_la_obra
@@ -22,6 +26,9 @@ SET NAMES utf8mb4;   -- para que las tildes de los datos de ejemplo se guarden b
 -- Se borran en orden: primero las que apuntan a otras
 -- (resenas y profesional_oficios -> profesionales -> barrios).
 -- MySQL no deja borrar una tabla mientras otra tenga una FOREIGN KEY hacia ella.
+DROP TABLE IF EXISTS mensaje_imagenes;
+DROP TABLE IF EXISTS mensajes;
+DROP TABLE IF EXISTS administradores;
 DROP TABLE IF EXISTS resenas;
 DROP TABLE IF EXISTS profesional_oficios;
 DROP TABLE IF EXISTS profesionales;
@@ -122,6 +129,52 @@ CREATE TABLE resenas (
 );
 
 -- ---------------------------------------------------------
+-- Administradores: las cuentas que pueden entrar a la bandeja de entrada (bandeja.php).
+-- Ingresan por el mismo login que los demás.
+-- ---------------------------------------------------------
+CREATE TABLE administradores (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(60) NOT NULL,
+    email VARCHAR(120) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,          -- encriptada con password_hash()
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ---------------------------------------------------------
+-- Mensajes: lo que se manda desde el formulario de Contacto.
+-- tipo_remitente separa los mensajes en la bandeja:
+--   "cliente", "profesional" o "visitante" (alguien sin cuenta).
+-- remitente_id es el id del cliente o del profesional (NULL si no tiene cuenta).
+-- No lleva FOREIGN KEY porque puede apuntar a dos tablas distintas:
+-- tipo_remitente dice en cuál buscarlo, igual que usuario_tipo en la sesión.
+-- ---------------------------------------------------------
+CREATE TABLE mensajes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    tipo_remitente VARCHAR(12) NOT NULL,
+    remitente_id INT NULL,
+    nombre VARCHAR(120) NOT NULL,
+    email VARCHAR(120) NOT NULL,
+    asunto VARCHAR(60) NOT NULL,
+    mensaje VARCHAR(2000) NOT NULL,
+    leido TINYINT(1) NOT NULL DEFAULT 0,     -- 0 = sin leer, 1 = leído
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ---------------------------------------------------------
+-- Imágenes adjuntas a un mensaje (hasta 3 por mensaje).
+-- El archivo se guarda en la carpeta adjuntos/; acá queda su nombre.
+-- ON DELETE CASCADE: si se borra el mensaje, se borran estas filas.
+-- ---------------------------------------------------------
+CREATE TABLE mensaje_imagenes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    mensaje_id INT NOT NULL,
+    archivo VARCHAR(60) NOT NULL,            -- nombre con el que se guardó en adjuntos/
+    nombre_original VARCHAR(255) NOT NULL,   -- nombre que tenía en la computadora de quien lo mandó
+    tipo VARCHAR(30) NOT NULL,               -- image/jpeg, image/png...
+    FOREIGN KEY (mensaje_id) REFERENCES mensajes(id) ON DELETE CASCADE
+);
+
+-- ---------------------------------------------------------
 -- Datos de ejemplo. La contraseña de todas estas cuentas es: 123456
 -- ---------------------------------------------------------
 -- barrio_id se busca por nombre con una subconsulta, así no hay que saber el número de memoria
@@ -161,3 +214,20 @@ WHERE email = 'carlos@ejemplo.com';
 UPDATE profesionales
 SET valoracion       = (SELECT IFNULL(ROUND(AVG(puntaje), 1), 0) FROM resenas WHERE resenas.profesional_id = profesionales.id),
     cantidad_resenas = (SELECT COUNT(*) FROM resenas WHERE resenas.profesional_id = profesionales.id);
+
+-- ---------------------------------------------------------
+-- Administración
+-- ---------------------------------------------------------
+-- La cuenta del equipo. La contraseña está encriptada con password_hash():
+-- la conoce el grupo y no se escribe en ningún archivo, porque el repositorio es público.
+INSERT INTO administradores (nombre, email, password) VALUES
+('Administración', 'iseiclaude@gmail.com', '$2y$10$p2ZzoZ5AicfAvKKOXYfJFOnp1dnK9F8UAUHSltBw3LZps7t9ogPDm');
+
+-- Mensajes de ejemplo, uno de cada tipo, para que la bandeja no arranque vacía
+INSERT INTO mensajes (tipo_remitente, remitente_id, nombre, email, asunto, mensaje) VALUES
+('cliente', 1, 'Lucía Fernández', 'lucia@ejemplo.com', 'Consulta general',
+ '¿Puedo dejarle una reseña a un profesional con el que todavía no terminé el trabajo?'),
+('profesional', 1, 'Juan Pérez', 'juan@ejemplo.com', 'Plan Destacado',
+ 'Hola, me interesa el plan Destacado. ¿Cuánto cuesta por mes y cómo lo pago?'),
+('visitante', NULL, 'Pablo Ortiz', 'pablo@ejemplo.com', 'Sugerencia',
+ 'Estaría bueno que se pueda buscar profesionales que trabajen los fines de semana.');

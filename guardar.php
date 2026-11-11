@@ -41,12 +41,15 @@ if (mb_strlen($nombre) > 60 || mb_strlen($apellido) > 60 || mb_strlen($email) > 
 
 // ¿Ese email ya está usado? Hay que revisar en LAS DOS tablas,
 // para que una misma persona no tenga una cuenta de cliente y otra de profesional
+// (también en administradores, para que nadie se registre con el email del equipo)
 $consulta = $conexion->prepare(
     "SELECT id FROM clientes WHERE email = ?
      UNION
-     SELECT id FROM profesionales WHERE email = ?"
+     SELECT id FROM profesionales WHERE email = ?
+     UNION
+     SELECT id FROM administradores WHERE email = ?"
 );
-$consulta->bind_param("ss", $email, $email);
+$consulta->bind_param("sss", $email, $email, $email);
 $consulta->execute();
 if ($consulta->get_result()->num_rows > 0) {
     header("Location: registro.php?error=existe");

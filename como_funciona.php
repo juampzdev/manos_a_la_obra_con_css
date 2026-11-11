@@ -9,8 +9,12 @@ require "config.php";
 // ¿Eligió modo oscuro? Lo guarda tema.php en una cookie
 $modo_oscuro = ($_COOKIE["tema"] ?? "") === "oscuro";
 
-// "visitante", "cliente" o "profesional"
+// "visitante", "cliente" o "profesional".
+// El administrador ve la explicación general, la misma que alguien sin cuenta
 $tipo = $_SESSION["usuario_tipo"] ?? "visitante";
+if ($tipo === "admin") {
+    $tipo = "visitante";
+}
 
 // ---------- Datos del cliente: cuántas reseñas dejó ----------
 $cantidad_mis_resenas = 0;
@@ -74,6 +78,10 @@ $es_destacado    = $mi_perfil && $mi_perfil["destacado_hasta"] !== null && $mi_p
             <a href="index.php#profesionales">Profesionales</a>
             <a href="como_funciona.php" class="activo">Cómo funciona</a>
             <a href="contacto.php">Contacto</a>
+            <?php if (($_SESSION["usuario_tipo"] ?? "") === "admin"): ?>
+                <!-- Solo el administrador ve esta pestaña -->
+                <a href="bandeja.php">📥 Bandeja de entrada</a>
+            <?php endif; ?>
         </nav>
     </header>
 

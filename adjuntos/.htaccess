@@ -1,0 +1,4 @@
+# Nadie puede abrir estos archivos directo desde el navegador.
+# Las imágenes de los mensajes solo se ven desde la bandeja de entrada,
+# a través de imagen_mensaje.php, que primero revisa que sea un administrador.
+Require all denied

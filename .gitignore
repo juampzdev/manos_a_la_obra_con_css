@@ -1,0 +1,4 @@
+# Las imágenes que manda la gente desde Contacto no se suben a GitHub:
+# son datos de cada computadora. Solo se sube el .htaccess de la carpeta.
+adjuntos/*
+!adjuntos/.htaccess
