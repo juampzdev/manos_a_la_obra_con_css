@@ -103,6 +103,11 @@ piden desde "Cómo funciona" → **Quiero ser Destacado**, que abre Contacto con
 > `database.sql` podés agregar solo la columna nueva:
 > `ALTER TABLE profesionales ADD destacado_hasta DATE NULL AFTER cantidad_resenas;`
 
+### Varios servicios por profesional
+
+Si la base ya estaba creada, ejecutá una vez el archivo `migracion_servicios.sql` desde SQLyog.
+Este crea `profesional_oficios` y copia allí los oficios actuales sin borrar las cuentas.
+
 ## Envío de mails (formulario de contacto)
 
 `contacto.php` usa la función `mail()` de PHP. XAMPP no manda mails si no se le configura una

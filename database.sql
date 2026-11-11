@@ -90,6 +90,18 @@ CREATE TABLE profesionales (
     FOREIGN KEY (barrio_id) REFERENCES barrios(id)
 );
 
+-- Servicios adicionales de cada profesional (el oficio principal queda en profesionales.oficio).
+DROP TABLE IF EXISTS profesional_oficios;
+CREATE TABLE profesional_oficios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    profesional_id INT NOT NULL,
+    oficio VARCHAR(60) NOT NULL,
+    UNIQUE KEY profesional_un_oficio (profesional_id, oficio),
+    FOREIGN KEY (profesional_id) REFERENCES profesionales(id) ON DELETE CASCADE
+);
+INSERT INTO profesional_oficios (profesional_id, oficio)
+SELECT id, oficio FROM profesionales WHERE oficio IS NOT NULL;
+
 -- ---------------------------------------------------------
 -- Reseñas: cada fila es la opinión de UN cliente sobre UN profesional.
 -- FOREIGN KEY: profesional_id y cliente_id tienen que existir en sus tablas.

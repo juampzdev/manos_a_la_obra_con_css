@@ -44,17 +44,18 @@ $tipos = "";
 $valores = [];
 
 if ($oficio !== "") {
-    $sql .= " AND oficio = ?";
-    $tipos .= "s";
+    $sql .= " AND (profesionales.oficio = ? OR EXISTS (SELECT 1 FROM profesional_oficios po WHERE po.profesional_id = profesionales.id AND po.oficio = ?))";
+    $tipos .= "ss";
+    $valores[] = $oficio;
     $valores[] = $oficio;
 }
 if ($buscar !== "") {
     // LIKE con % busca el texto en cualquier parte: "pint" encuentra "Pintor"
-    $sql .= " AND (oficio LIKE ? OR nombre LIKE ? OR apellido LIKE ? OR descripcion LIKE ?
+    $sql .= " AND (oficio LIKE ? OR EXISTS (SELECT 1 FROM profesional_oficios po WHERE po.profesional_id = profesionales.id AND po.oficio LIKE ?) OR nombre LIKE ? OR apellido LIKE ? OR descripcion LIKE ?
               OR ubicacion LIKE ? OR barrios.barrio LIKE ?)";
     $patron = "%" . $buscar . "%";
-    $tipos .= "ssssss";
-    array_push($valores, $patron, $patron, $patron, $patron, $patron, $patron);
+    $tipos .= "sssssss";
+    array_push($valores, $patron, $patron, $patron, $patron, $patron, $patron, $patron);
 }
 // Primero los del plan Destacado (1 antes que 0), después los que tienen
 // la insignia "Mejor valorado" y al final el resto, de mayor a menor valoración
@@ -67,6 +68,21 @@ if ($tipos !== "") {
 }
 $consulta->execute();
 $resultado_profesionales = $consulta->get_result();
+$profesionales_lista = [];
+while ($fila_profesional = $resultado_profesionales->fetch_assoc()) {
+    $profesionales_lista[$fila_profesional["id"]] = $fila_profesional;
+}
+if ($profesionales_lista) {
+    $ids_lista = implode(",", array_map("intval", array_keys($profesionales_lista)));
+    $resultado_oficios = $conexion->query("SELECT profesional_id, oficio FROM profesional_oficios WHERE profesional_id IN ($ids_lista) ORDER BY id");
+    while ($fila_oficio = $resultado_oficios->fetch_assoc()) {
+        $id_p = $fila_oficio["profesional_id"];
+        $lista = $profesionales_lista[$id_p]["oficios_lista"] ?? $profesionales_lista[$id_p]["oficio"];
+        if ($fila_oficio["oficio"] !== $profesionales_lista[$id_p]["oficio"]) $lista .= ", " . $fila_oficio["oficio"];
+        $profesionales_lista[$id_p]["oficios_lista"] = $lista;
+    }
+}
+$profesionales_lista = array_values($profesionales_lista);
 
 // Título de la sección según lo que se esté mostrando
 if ($oficio !== "") {
@@ -124,14 +140,8 @@ $oficios_destacados = [
     "Albañil"      => "🧱",
 ];
 
-// A dónde lleva el botón "Publicar servicio" según quién esté mirando
-if (!isset($_SESSION["usuario_id"])) {
-    $link_publicar = "registro.php";              // sin cuenta: que se registre
-} elseif ($_SESSION["usuario_tipo"] === "profesional") {
-    $link_publicar = "postular.php";              // profesional: a su perfil
-} else {
-    $link_publicar = "";                          // cliente: no publica
-}
+// Personalización del banner según el rol de la sesión.
+$tipo_usuario = $_SESSION["usuario_tipo"] ?? "";
 
 // Si es un profesional que todavía no completó su perfil (oficio vacío),
 // le mostramos un aviso arriba, porque mientras tanto no aparece en el inicio
@@ -211,12 +221,24 @@ if (($_SESSION["usuario_tipo"] ?? "") === "profesional") {
     <section class="hero">
         <div class="contenedor">
             <div class="hero-texto">
-                <h1>Encontrá a la persona indicada para tu próximo trabajo</h1>
-                <p>Conectamos clientes con trabajadores de confianza en todos los oficios.</p>
+                <?php if ($tipo_usuario === "profesional"): ?>
+                    <h1>Conectá con más clientes para tus próximos trabajos</h1>
+                    <p>Mostrá tus servicios y hacé crecer tu trabajo con clientes de tu zona.</p>
+                <?php elseif ($tipo_usuario === "cliente"): ?>
+                    <h1>Encontrá a la persona indicada para tu próximo trabajo</h1>
+                    <p>Buscá trabajadores de confianza para resolver lo que necesitás.</p>
+                <?php else: ?>
+                    <h1>Encontrá a la persona indicada para tu próximo trabajo</h1>
+                    <p>Conectamos clientes con trabajadores de confianza en todos los oficios.</p>
+                <?php endif; ?>
                 <div class="hero-botones">
-                    <a href="#profesionales" class="boton boton-lleno">Buscar profesionales</a>
-                    <?php if ($link_publicar !== ""): ?>
-                        <a href="<?php echo $link_publicar; ?>" class="boton boton-borde">Publicar servicio</a>
+                    <?php if ($tipo_usuario === "profesional"): ?>
+                        <a href="postular.php" class="boton boton-lleno"><?php echo $falta_perfil ? "Completar mi perfil" : "Ver mi perfil"; ?></a>
+                    <?php elseif ($tipo_usuario === "cliente"): ?>
+                        <a href="#profesionales" class="boton boton-lleno">Buscar profesionales</a>
+                    <?php else: ?>
+                        <a href="#profesionales" class="boton boton-lleno">Buscar profesionales</a>
+                        <a href="registro.php" class="boton boton-borde">Publicar servicio</a>
                     <?php endif; ?>
                 </div>
             </div>
@@ -287,7 +309,7 @@ if (($_SESSION["usuario_tipo"] ?? "") === "profesional") {
             </div>
             <div class="profesionales-grid">
 
-                <?php if ($resultado_profesionales->num_rows === 0): ?>
+                <?php if (count($profesionales_lista) === 0): ?>
                     <p class="sin-resultados">
                         <?php echo ($buscar !== "" || $oficio !== "")
                             ? "No encontramos profesionales con esa búsqueda."
@@ -295,12 +317,12 @@ if (($_SESSION["usuario_tipo"] ?? "") === "profesional") {
                     </p>
                 <?php endif; ?>
 
-                <?php while ($profesional = $resultado_profesionales->fetch_assoc()): ?>
+                <?php foreach ($profesionales_lista as $profesional): ?>
                     <?php
                     $etiqueta = "";   // en esta grilla las tarjetas no llevan etiqueta
                     include "tarjeta_profesional.php";
                     ?>
-                <?php endwhile; ?>
+                <?php endforeach; ?>
 
             </div>
         </div>

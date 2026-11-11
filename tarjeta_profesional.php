@@ -27,7 +27,8 @@ if (!isset($profesional)) {
             <span class="insignia-mejor-valorado">🏆 Mejor valorado</span>
         <?php endif; ?>
         <h3><?php echo htmlspecialchars($profesional["nombre"] . " " . $profesional["apellido"]); ?></h3>
-        <p class="oficio"><?php echo htmlspecialchars($profesional["oficio"]); ?></p>
+        <?php $oficios_tarjeta = $profesional["oficios_lista"] ?? $profesional["oficio"]; ?>
+        <p class="oficio"><?php echo htmlspecialchars($oficios_tarjeta); ?></p>
         <!-- "1 reseña" en singular y "2 reseñas" en plural -->
         <p class="valoracion">⭐ <?php echo $profesional["valoracion"]; ?>
             (<?php echo $profesional["cantidad_resenas"] . ($profesional["cantidad_resenas"] == 1 ? " reseña" : " reseñas"); ?>)</p>

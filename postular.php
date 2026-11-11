@@ -43,7 +43,8 @@ function fecha_valida($fecha) {
 
 // ---------- Guardar el formulario ----------
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $oficio      = $_POST["profesion"] ?? "";
+    $oficios_elegidos = array_values(array_unique(array_filter($_POST["profesiones"] ?? [], fn($o) => in_array($o, $oficios, true))));
+    $oficio = $oficios_elegidos[0] ?? "";
     $fecha_alta  = $_POST["fecha_alta"] ?? "";
     $fecha_baja  = $_POST["fecha_baja"] ?? "";
     $descripcion = trim($_POST["descripcion"] ?? "");
@@ -56,7 +57,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // Fecha de baja vacía = sigue en actividad (NULL en la base)
     $fecha_baja = $fecha_baja === "" ? null : $fecha_baja;
 
-    if (!in_array($oficio, $oficios) || $fecha_alta === "" || $descripcion === ""
+    if (count($oficios_elegidos) === 0 || $fecha_alta === "" || $descripcion === ""
         || $ciudad === "" || $domicilio === "" || $telefono === "") {
         $error = "Completá todos los campos obligatorios.";
     } elseif (!isset($barrios[$barrio_id])) {
@@ -94,6 +95,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $sql->bind_param("ssssisissi", $oficio, $descripcion, $ciudad, $domicilio, $barrio_id,
                          $telefono, $experiencia, $fecha_alta, $fecha_baja, $usuario_id);
         $sql->execute();
+        $borrar_oficios = $conexion->prepare("DELETE FROM profesional_oficios WHERE profesional_id = ?");
+        $borrar_oficios->bind_param("i", $usuario_id);
+        $borrar_oficios->execute();
+        $insertar_oficio = $conexion->prepare("INSERT INTO profesional_oficios (profesional_id, oficio) VALUES (?, ?)");
+        foreach ($oficios_elegidos as $oficio_guardar) {
+            $insertar_oficio->bind_param("is", $usuario_id, $oficio_guardar);
+            $insertar_oficio->execute();
+        }
         $mensaje = $ya_tenia_perfil ? "Perfil actualizado." : "¡Perfil publicado! Ya aparecés en el inicio.";
     }
 }
@@ -103,6 +112,13 @@ $consulta = $conexion->prepare("SELECT * FROM profesionales WHERE id = ?");
 $consulta->bind_param("i", $usuario_id);
 $consulta->execute();
 $perfil = $consulta->get_result()->fetch_assoc();
+$servicios_actuales = [];
+$cargar_servicios = $conexion->prepare("SELECT oficio FROM profesional_oficios WHERE profesional_id = ? ORDER BY id");
+$cargar_servicios->bind_param("i", $usuario_id);
+$cargar_servicios->execute();
+$resultado_servicios = $cargar_servicios->get_result();
+while ($fila_servicio = $resultado_servicios->fetch_assoc()) $servicios_actuales[] = $fila_servicio["oficio"];
+if (!$servicios_actuales && !empty($perfil["oficio"])) $servicios_actuales[] = $perfil["oficio"];
 
 // Si hubo error, mostramos lo que escribió; si no, lo que hay en la base
 function valor($campo_form, $campo_db) {
@@ -135,14 +151,49 @@ $barrio_actual = $error !== null ? (int) ($_POST["barrio"] ?? 0) : (int) ($perfi
             <p class="mensaje-ok"><?php echo $mensaje; ?></p>
         <?php endif; ?>
 
-        <label for="profesion">Profesión
-            <select id="profesion" name="profesion" required>
-                <option value="" disabled <?php echo $oficio_actual === "" ? "selected" : ""; ?>>Elegí una opción</option>
-                <?php foreach ($oficios as $o): ?>
-                    <option value="<?php echo $o; ?>" <?php echo $oficio_actual === $o ? "selected" : ""; ?>><?php echo $o; ?></option>
-                <?php endforeach; ?>
-            </select>
-        </label>
+        <div id="servicios-grid" class="servicios-grid">
+            <label>Servicio 1
+                <select name="profesiones[]" required class="selector-servicio">
+                    <option value="">Elegí un servicio</option>
+                    <?php foreach ($oficios as $o): ?><option value="<?php echo htmlspecialchars($o); ?>" <?php echo ($error !== null ? (($_POST["profesiones"][0] ?? "") === $o) : (($servicios_actuales[0] ?? $oficio_actual) === $o)) ? "selected" : ""; ?>><?php echo htmlspecialchars($o); ?></option><?php endforeach; ?>
+                </select>
+            </label>
+            <?php $servicios_form = $error !== null ? ($_POST["profesiones"] ?? []) : $servicios_actuales; foreach (array_slice($servicios_form, 1) as $servicio_extra): ?>
+                <label>Otro servicio
+                    <select name="profesiones[]" class="selector-servicio">
+                        <option value="">Elegí un servicio</option>
+                        <?php foreach ($oficios as $o): ?><option value="<?php echo htmlspecialchars($o); ?>" <?php echo $servicio_extra === $o ? "selected" : ""; ?>><?php echo htmlspecialchars($o); ?></option><?php endforeach; ?>
+                    </select>
+                </label>
+            <?php endforeach; ?>
+        </div>
+        <button type="button" id="agregar-servicio" class="boton boton-borde">+ Agregar otro servicio</button>
+        <script>
+        (() => {
+            const grid = document.getElementById('servicios-grid');
+            const opciones = <?php echo json_encode($oficios, JSON_UNESCAPED_UNICODE); ?>;
+            const agregar = document.getElementById('agregar-servicio');
+            function actualizar() {
+                const selects = [...grid.querySelectorAll('select')];
+                const usados = selects.map(s => s.value).filter(Boolean);
+                selects.forEach(select => {
+                    [...select.options].forEach(option => {
+                        if (option.value) option.disabled = usados.includes(option.value) && option.value !== select.value;
+                    });
+                });
+                agregar.hidden = selects.length >= opciones.length;
+                agregar.disabled = selects.length >= opciones.length;
+            }
+            agregar.addEventListener('click', () => {
+                if (grid.querySelectorAll('select').length >= opciones.length) return;
+                const label = document.createElement('label'); label.textContent = 'Otro servicio';
+                const select = document.createElement('select'); select.name = 'profesiones[]'; select.className = 'selector-servicio';
+                select.innerHTML = '<option value="">Elegí un servicio</option>' + opciones.map(o => `<option value="${o.replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;')}">${o}</option>`).join('');
+                label.append(select); grid.append(label); actualizar();
+            });
+            grid.addEventListener('change', actualizar); actualizar();
+        })();
+        </script>
 
         <div class="fila">
             <label for="fecha_alta">Fecha de alta
