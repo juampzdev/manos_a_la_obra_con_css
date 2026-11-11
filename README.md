@@ -26,6 +26,7 @@ Proyecto de la materia **Práctica Profesionalizante** (Analista Funcional en Si
 | `tema.php` | No se ve. Cambia entre modo claro y oscuro y guarda la elección en una cookie. |
 | `registro.php` | Formulario para crear una cuenta (cliente o profesional). |
 | `guardar.php` | No se ve. Guarda la cuenta en la tabla `clientes` o `profesionales`. |
+| `correo_bienvenida.php` | No se abre solo. Tiene la función `enviar_bienvenida()`, que `guardar.php` usa para mandar el mail de bienvenida (distinto para cliente y profesional). |
 | `login.php` | Formulario para ingresar. Busca la cuenta en las dos tablas. |
 | `logout.php` | No se ve. Cierra la sesión. |
 | `postular.php` | El profesional completa o edita su perfil. |
@@ -110,7 +111,7 @@ Este crea `profesional_oficios` y copia allí los oficios actuales sin borrar la
 
 ## Envío de mails (formulario de contacto)
 
-`contacto.php` usa la función `mail()` de PHP. XAMPP no manda mails si no se le configura una
+`contacto.php` y el mail de bienvenida (`correo_bienvenida.php`) usan la función `mail()` de PHP. XAMPP no manda mails si no se le configura una
 cuenta, así que hay que hacerlo **una vez en cada computadora** donde se quiera probar el envío.
 Se usa la propia cuenta de Gmail del equipo para mandar.
 
@@ -139,6 +140,8 @@ Se usa la propia cuenta de Gmail del equipo para mandar.
    Si alguna línea empieza con `;`, borrar el `;` (con `;` adelante la línea no se tiene en cuenta).
 4. **Reiniciar Apache** en XAMPP (Stop y Start).
 5. Entrar a `contacto.php`, mandar un mensaje de prueba y revisar la bandeja de `iseiclaude@gmail.com`.
+6. Crear una cuenta con un email propio y revisar que llegue el mail de bienvenida (también en Spam).
+   Si el mail no está configurado, la cuenta se crea igual: solo no llega el correo.
 
 Si la página dice "No pudimos enviar el mensaje", el detalle del problema queda en
 `C:\xampp\sendmail\error.log`. Lo más común es una contraseña de aplicación mal copiada.

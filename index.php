@@ -207,6 +207,19 @@ if (($_SESSION["usuario_tipo"] ?? "") === "profesional") {
         </nav>
     </header>
 
+    <?php if (isset($_GET["bienvenida"]) && isset($_SESSION["usuario_nombre"])): ?>
+        <!-- Aviso de cuenta recién creada: guardar.php nos manda con ?bienvenida=1 si salió el mail -->
+        <div class="aviso-bienvenida">
+            <div class="contenedor">
+                <p>✅ <strong>¡Tu cuenta está lista!</strong>
+                    <?php if ($_GET["bienvenida"] === "1"): ?>
+                        Te mandamos un correo de bienvenida. Si no lo ves, revisá la carpeta de spam.
+                    <?php endif; ?>
+                </p>
+            </div>
+        </div>
+    <?php endif; ?>
+
     <?php if ($falta_perfil): ?>
         <!-- Aviso para el profesional que todavía no cargó su perfil -->
         <div class="aviso-perfil">

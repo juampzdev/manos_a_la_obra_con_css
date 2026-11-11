@@ -9,7 +9,7 @@
      3.  Base (letra, fondo, contenedor)
      4.  Botones
      5.  Encabezado y menú
-     6.  Aviso "Completá tu perfil"
+     6.  Avisos (cuenta creada y "Completá tu perfil")
      7.  Portada (hero)
      8.  Secciones y tarjetas de oficios
      9.  Profesionales cerca
@@ -229,7 +229,7 @@ a.link-ingresar:hover { color: var(--primario); }
     border-bottom-color: var(--primario);
 }
 
-/* ---------- 6. Aviso "Completá tu perfil" (profesional sin perfil) ---------- */
+/* ---------- 6. Avisos: cuenta creada y "Completá tu perfil" ---------- */
 .aviso-perfil {
     background: var(--primario-suave);
     border-bottom: 3px solid var(--primario);
@@ -243,6 +243,16 @@ a.link-ingresar:hover { color: var(--primario); }
     flex-wrap: wrap;            /* en celular el botón baja abajo del texto */
 }
 .aviso-perfil p { margin: 0; }
+
+/* Aviso verde "¡Tu cuenta está lista!" que aparece una vez, después de registrarse */
+.aviso-bienvenida {
+    background: #e7f6ec;
+    color: #1d6b3a;
+    border-bottom: 3px solid #16a34a;
+    padding: 12px 0;
+}
+.aviso-bienvenida p { margin: 0; }
+body.oscuro .aviso-bienvenida { background: #14301f; color: #86efac; }
 .aviso-perfil .boton { padding: 8px 18px; flex-shrink: 0; }
 
 /* ---------- 7. Portada (hero) ---------- */

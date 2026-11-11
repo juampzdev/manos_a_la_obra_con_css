@@ -3,6 +3,7 @@
 // Según el tipo elegido, la guarda en la tabla "clientes" o en "profesionales".
 session_start();
 require "config.php";
+require "correo_bienvenida.php";   // la función enviar_bienvenida()
 
 // Si alguien entra directo a guardar.php sin mandar el formulario, lo sacamos
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
@@ -83,7 +84,12 @@ $_SESSION["usuario_nombre"]   = $nombre;
 $_SESSION["usuario_apellido"] = $apellido;
 $_SESSION["usuario_tipo"]     = $tipo;
 
+// Le mandamos el mail de bienvenida. Si no sale (por ejemplo, XAMPP sin el mail
+// configurado), la cuenta igual queda creada: el mail es un extra, no un requisito.
+$mail_enviado = enviar_bienvenida($email, $nombre, $tipo);
+
 // Cliente y profesional vuelven al inicio ya logueados.
+// ?bienvenida=1 (mail enviado) o =0 (no salió) hace que el inicio muestre el aviso de cuenta creada.
 // El profesional completa su perfil cuando quiera, con el botón "Postular servicio" del encabezado.
-header("Location: index.php");
+header("Location: index.php?bienvenida=" . ($mail_enviado ? "1" : "0"));
 exit;
