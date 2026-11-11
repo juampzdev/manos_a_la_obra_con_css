@@ -10,6 +10,7 @@
 --    - resenas:       la opinión que un cliente deja sobre un profesional
 --  Además hay una tabla de apoyo:
 --    - barrios:       los barrios de Rosario agrupados por zona, para "Profesionales cerca"
+--    - profesional_oficios: los servicios de cada profesional (puede ofrecer más de uno)
 -- =========================================================
 
 CREATE DATABASE IF NOT EXISTS manos_a_la_obra
@@ -18,8 +19,11 @@ CREATE DATABASE IF NOT EXISTS manos_a_la_obra
 USE manos_a_la_obra;
 SET NAMES utf8mb4;   -- para que las tildes de los datos de ejemplo se guarden bien
 
--- Se borran en orden: primero las que apuntan a otras (resenas -> profesionales -> barrios)
+-- Se borran en orden: primero las que apuntan a otras
+-- (resenas y profesional_oficios -> profesionales -> barrios).
+-- MySQL no deja borrar una tabla mientras otra tenga una FOREIGN KEY hacia ella.
 DROP TABLE IF EXISTS resenas;
+DROP TABLE IF EXISTS profesional_oficios;
 DROP TABLE IF EXISTS profesionales;
 DROP TABLE IF EXISTS clientes;
 DROP TABLE IF EXISTS barrios;
@@ -91,7 +95,6 @@ CREATE TABLE profesionales (
 );
 
 -- Servicios adicionales de cada profesional (el oficio principal queda en profesionales.oficio).
-DROP TABLE IF EXISTS profesional_oficios;
 CREATE TABLE profesional_oficios (
     id INT AUTO_INCREMENT PRIMARY KEY,
     profesional_id INT NOT NULL,
@@ -99,8 +102,6 @@ CREATE TABLE profesional_oficios (
     UNIQUE KEY profesional_un_oficio (profesional_id, oficio),
     FOREIGN KEY (profesional_id) REFERENCES profesionales(id) ON DELETE CASCADE
 );
-INSERT INTO profesional_oficios (profesional_id, oficio)
-SELECT id, oficio FROM profesionales WHERE oficio IS NOT NULL;
 
 -- ---------------------------------------------------------
 -- Reseñas: cada fila es la opinión de UN cliente sobre UN profesional.
@@ -130,6 +131,11 @@ INSERT INTO profesionales (nombre, apellido, email, password, iniciales, oficio,
 ('Carlos', 'Ruiz',     'carlos@ejemplo.com', '$2y$10$ioq8MZwfjHbqKlICL2TU7.Kb122ljeebjRXsbXTO5Z1s.r0jHowrq', 'CR', 'Plomero',      'Destapaciones y arreglos de pérdidas.',  'Rosario', 'Mendoza 3500',   (SELECT id FROM barrios WHERE barrio = 'Echesortu'), '341 555-3333', 15, '2011-01-10'),
 ('Ana',    'López',    'ana@ejemplo.com',    '$2y$10$ioq8MZwfjHbqKlICL2TU7.Kb122ljeebjRXsbXTO5Z1s.r0jHowrq', 'AL', 'Gasista',      'Instalaciones de gas y service de calefones.', 'Rosario', 'Junín 5200', (SELECT id FROM barrios WHERE barrio = 'Ludueña'),   '341 555-4444',  6, '2020-02-01'),
 ('Diego',  'Martínez', 'diego@ejemplo.com',  '$2y$10$ioq8MZwfjHbqKlICL2TU7.Kb122ljeebjRXsbXTO5Z1s.r0jHowrq', 'DM', 'Carpintero',   'Muebles a medida y arreglo de aberturas.', 'Rosario', 'Alberdi 600',   (SELECT id FROM barrios WHERE barrio = 'Arroyito'),  '341 555-5555', 10, '2016-09-01');
+
+-- Cada profesional de ejemplo ofrece al menos su oficio principal.
+-- Se copia DESPUÉS de cargar los profesionales: antes la tabla estaría vacía.
+INSERT INTO profesional_oficios (profesional_id, oficio)
+SELECT id, oficio FROM profesionales WHERE oficio IS NOT NULL;
 
 INSERT INTO clientes (nombre, apellido, email, password) VALUES
 ('Lucía', 'Fernández', 'lucia@ejemplo.com', '$2y$10$ioq8MZwfjHbqKlICL2TU7.Kb122ljeebjRXsbXTO5Z1s.r0jHowrq'),
